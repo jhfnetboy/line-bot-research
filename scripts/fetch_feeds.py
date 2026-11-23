@@ -5,7 +5,7 @@ LINE for Business TH), reads @line/liff on npm and queries HN Algolia. Writes it
 N hours to work/candidates-DATE.tsv (not committed). It only gathers candidates: read each
 original page before writing the digest, and keep its URL and date.
 Usage: python3 scripts/fetch_feeds.py [--hours 48]"""
-import argparse, json, re, urllib.parse, urllib.request, concurrent.futures as cf
+import argparse, json, re, time, urllib.parse, urllib.request, concurrent.futures as cf
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone, timedelta
 from email.utils import parsedate_to_datetime
@@ -19,7 +19,12 @@ src = json.loads((root / "sources.json").read_text(encoding="utf-8"))["sources"]
 feeds = [s for s in src if s["fetch"].split()[0] in ("RSS", "Atom")]
 seen_file = root / "work" / "seen.json"
 seen = set(json.loads(seen_file.read_text())) if seen_file.exists() else set()
-def get(u, t=25): return urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=t).read()
+def get(u, t=25, tries=3):
+    for n in range(tries):  # Google News and GitHub sometimes answer 429; back off and retry
+        try: return urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=t).read()
+        except urllib.error.HTTPError as e:
+            if e.code != 429 or n == tries - 1: raise
+            time.sleep(10 * (n + 1))
 def fmt(d): return d.astimezone(BKK).strftime("%Y-%m-%d %H:%M")
 def pd(s):
     s = (s or "").strip()
