@@ -1,0 +1,22 @@
+{
+  "date": "YYYY-MM-DD",
+  "coverage": "YYYY-MM-DD to YYYY-MM-DD (Asia/Bangkok, UTC+7)",
+  "keywords": ["keyword one", "keyword two", "keyword three"],
+  "summary": "Two or three sentences shown on the home page card.",
+  "image": {
+    "local_path": "assets/YYYY-MM-DD.jpg",
+    "source_url": "https://original article the image comes from",
+    "credit": "Publisher or author"
+  },
+  "items": [
+    {
+      "topic": "Topic name",
+      "title": "Item title",
+      "summary": "One or two sentences.",
+      "url": "https://original source",
+      "date": "YYYY-MM-DD",
+      "keywords": ["keyword"],
+      "links": [{"label": "Optional extra source", "url": "https://...", "date": "YYYY-MM-DD"}]
+    }
+  ]
+}

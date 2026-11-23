@@ -1,0 +1,406 @@
+{
+  "checked": "2026-11-23",
+  "count": 40,
+  "sources": [
+    {
+      "name": "LINE Developers News (EN)",
+      "url": "https://developers.line.biz/en/news/1/",
+      "type": "Official",
+      "area": "Platform changelog",
+      "purpose": "Messaging API, LIFF, LINE MINI App, LINE Login, OA API changes, deprecations, price notices",
+      "priority": "P0",
+      "fetch": "HTML scrape (RSS endpoints return 403)",
+      "http_status": "200"
+    },
+    {
+      "name": "LINE Developers News (JA)",
+      "url": "https://developers.line.biz/ja/news/1/",
+      "type": "Official",
+      "area": "Platform changelog",
+      "purpose": "Japanese edition; sometimes has Japan-only notices",
+      "priority": "P1",
+      "fetch": "HTML scrape",
+      "http_status": "200"
+    },
+    {
+      "name": "LY Corporation Tech Blog (EN)",
+      "url": "https://techblog.lycorp.co.jp/en/feed/index.xml",
+      "type": "Official",
+      "area": "Engineering",
+      "purpose": "LINE / LY engineering posts, DevRel, platform internals",
+      "priority": "P1",
+      "fetch": "RSS",
+      "http_status": "200"
+    },
+    {
+      "name": "LY Corporation Tech Blog (JA)",
+      "url": "https://techblog.lycorp.co.jp/ja/feed/index.xml",
+      "type": "Official",
+      "area": "Engineering",
+      "purpose": "Japanese engineering posts, more frequent than EN",
+      "priority": "P1",
+      "fetch": "RSS",
+      "http_status": "200"
+    },
+    {
+      "name": "LY Corporation newsroom (EN)",
+      "url": "https://www.lycorp.co.jp/en/news/",
+      "type": "Official",
+      "area": "Corporate",
+      "purpose": "Press releases, earnings, security incidents, policy",
+      "priority": "P1",
+      "fetch": "HTML scrape (announcement IDs)",
+      "http_status": "200"
+    },
+    {
+      "name": "LY Corporation press releases on PR TIMES (JA)",
+      "url": "https://prtimes.jp/companyrdf.php?company_id=129774",
+      "type": "Official",
+      "area": "Corporate",
+      "purpose": "All LY Corp Japanese press releases with dates (filter for LINE OA, LINE bot, AI)",
+      "priority": "P1",
+      "fetch": "RSS",
+      "http_status": "200"
+    },
+    {
+      "name": "LINE Thailand Newsroom",
+      "url": "https://linenewsroom.com/press-release",
+      "type": "Official",
+      "area": "Thailand",
+      "purpose": "LINE Thailand press releases (DevCon, MKTCON, LINE for Business)",
+      "priority": "P0",
+      "fetch": "HTML scrape (slugs; open page for date)",
+      "http_status": "200"
+    },
+    {
+      "name": "LINE for Business Thailand news",
+      "url": "https://lineforbusiness.com/th/news",
+      "type": "Official",
+      "area": "Thailand / pricing",
+      "purpose": "LINE OA packages, Reply API changes, Thai business notices",
+      "priority": "P0",
+      "fetch": "HTML scrape (date in slug)",
+      "http_status": "200"
+    },
+    {
+      "name": "LINE for Business Japan (LY biz) news",
+      "url": "https://www.lycbiz.com/jp/news/",
+      "type": "Official",
+      "area": "Japan / pricing",
+      "purpose": "LINE OA and LINE Ads notices for Japan",
+      "priority": "P1",
+      "fetch": "manual",
+      "http_status": "200"
+    },
+    {
+      "name": "LINE Biz Taiwan",
+      "url": "https://tw.linebiz.com/",
+      "type": "Official",
+      "area": "Taiwan / pricing",
+      "purpose": "LINE OA plans and notices for Taiwan",
+      "priority": "P2",
+      "fetch": "manual",
+      "http_status": "200"
+    },
+    {
+      "name": "LINE Developers Thailand (Medium)",
+      "url": "https://medium.com/feed/linedevth",
+      "type": "Official community",
+      "area": "Thailand dev",
+      "purpose": "LINE Thailand DevRel tutorials and announcements",
+      "priority": "P1",
+      "fetch": "RSS",
+      "http_status": "200"
+    },
+    {
+      "name": "line/line-bot-sdk-python releases",
+      "url": "https://github.com/line/line-bot-sdk-python/releases.atom",
+      "type": "GitHub",
+      "area": "SDK",
+      "purpose": "Python SDK releases",
+      "priority": "P0",
+      "fetch": "Atom",
+      "http_status": "200"
+    },
+    {
+      "name": "line/line-bot-sdk-nodejs releases",
+      "url": "https://github.com/line/line-bot-sdk-nodejs/releases.atom",
+      "type": "GitHub",
+      "area": "SDK",
+      "purpose": "Node.js SDK releases",
+      "priority": "P0",
+      "fetch": "Atom",
+      "http_status": "200"
+    },
+    {
+      "name": "line/line-bot-sdk-go releases",
+      "url": "https://github.com/line/line-bot-sdk-go/releases.atom",
+      "type": "GitHub",
+      "area": "SDK",
+      "purpose": "Go SDK releases",
+      "priority": "P1",
+      "fetch": "Atom",
+      "http_status": "200"
+    },
+    {
+      "name": "line/line-bot-sdk-java releases",
+      "url": "https://github.com/line/line-bot-sdk-java/releases.atom",
+      "type": "GitHub",
+      "area": "SDK",
+      "purpose": "Java SDK releases",
+      "priority": "P1",
+      "fetch": "Atom",
+      "http_status": "200"
+    },
+    {
+      "name": "line/line-bot-sdk-php releases",
+      "url": "https://github.com/line/line-bot-sdk-php/releases.atom",
+      "type": "GitHub",
+      "area": "SDK",
+      "purpose": "PHP SDK releases",
+      "priority": "P1",
+      "fetch": "Atom",
+      "http_status": "200"
+    },
+    {
+      "name": "line/line-bot-sdk-ruby releases",
+      "url": "https://github.com/line/line-bot-sdk-ruby/releases.atom",
+      "type": "GitHub",
+      "area": "SDK",
+      "purpose": "Ruby SDK releases",
+      "priority": "P2",
+      "fetch": "Atom",
+      "http_status": "200"
+    },
+    {
+      "name": "line/line-bot-mcp-server releases",
+      "url": "https://github.com/line/line-bot-mcp-server/releases.atom",
+      "type": "GitHub",
+      "area": "AI / MCP",
+      "purpose": "Official LINE MCP server for AI agents",
+      "priority": "P0",
+      "fetch": "Atom",
+      "http_status": "200"
+    },
+    {
+      "name": "line/line-openapi commits",
+      "url": "https://github.com/line/line-openapi/commits/main.atom",
+      "type": "GitHub",
+      "area": "API spec",
+      "purpose": "OpenAPI spec changes that precede SDK releases",
+      "priority": "P1",
+      "fetch": "Atom",
+      "http_status": "200"
+    },
+    {
+      "name": "line/liff-cli releases",
+      "url": "https://github.com/line/liff-cli/releases.atom",
+      "type": "GitHub",
+      "area": "LIFF",
+      "purpose": "LIFF CLI releases",
+      "priority": "P2",
+      "fetch": "Atom",
+      "http_status": "200"
+    },
+    {
+      "name": "@line/liff on npm",
+      "url": "https://registry.npmjs.org/@line/liff",
+      "type": "Package registry",
+      "area": "LIFF",
+      "purpose": "LIFF SDK version and publish time",
+      "priority": "P1",
+      "fetch": "JSON API (dist-tags.latest and time)",
+      "http_status": "200"
+    },
+    {
+      "name": "Dify releases",
+      "url": "https://github.com/langgenius/dify/releases.atom",
+      "type": "GitHub",
+      "area": "AI chatbot builders",
+      "purpose": "Dify releases (LINE via marketplace plugin)",
+      "priority": "P1",
+      "fetch": "Atom",
+      "http_status": "200"
+    },
+    {
+      "name": "n8n releases",
+      "url": "https://github.com/n8n-io/n8n/releases.atom",
+      "type": "GitHub",
+      "area": "AI chatbot builders",
+      "purpose": "n8n releases (LINE node; LINE Notify node is legacy)",
+      "priority": "P2",
+      "fetch": "Atom (filter for LINE)",
+      "http_status": "200"
+    },
+    {
+      "name": "Botpress releases",
+      "url": "https://github.com/botpress/botpress/releases.atom",
+      "type": "GitHub",
+      "area": "AI chatbot builders",
+      "purpose": "Botpress releases and LINE integration",
+      "priority": "P2",
+      "fetch": "Atom",
+      "http_status": "200"
+    },
+    {
+      "name": "Dify Marketplace: LINE Connect plugin",
+      "url": "https://marketplace.dify.ai/plugin/suphachok/line-connect",
+      "type": "Marketplace",
+      "area": "AI chatbot builders",
+      "purpose": "Community LINE channel plugin for Dify",
+      "priority": "P2",
+      "fetch": "manual",
+      "http_status": "200"
+    },
+    {
+      "name": "n8n LINE node docs",
+      "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.line/",
+      "type": "Docs",
+      "area": "AI chatbot builders",
+      "purpose": "n8n LINE integration status",
+      "priority": "P2",
+      "fetch": "manual",
+      "http_status": "200"
+    },
+    {
+      "name": "Zenn topic: linebot",
+      "url": "https://zenn.dev/topics/linebot/feed",
+      "type": "Community",
+      "area": "Japan dev",
+      "purpose": "Japanese developer articles on LINE bots",
+      "priority": "P1",
+      "fetch": "RSS",
+      "http_status": "200"
+    },
+    {
+      "name": "Zenn topic: liff",
+      "url": "https://zenn.dev/topics/liff/feed",
+      "type": "Community",
+      "area": "Japan dev",
+      "purpose": "Japanese LIFF / MINI App articles",
+      "priority": "P2",
+      "fetch": "RSS",
+      "http_status": "200"
+    },
+    {
+      "name": "Qiita tag: linebot",
+      "url": "https://qiita.com/tags/linebot/feed",
+      "type": "Community",
+      "area": "Japan dev",
+      "purpose": "Japanese LINE bot articles",
+      "priority": "P2",
+      "fetch": "Atom",
+      "http_status": "200"
+    },
+    {
+      "name": "Qiita tag: LINEmessagingAPI",
+      "url": "https://qiita.com/tags/linemessagingapi/feed",
+      "type": "Community",
+      "area": "Japan dev",
+      "purpose": "Messaging API articles",
+      "priority": "P2",
+      "fetch": "Atom",
+      "http_status": "200"
+    },
+    {
+      "name": "Medium tag: line-bot",
+      "url": "https://medium.com/feed/tag/line-bot",
+      "type": "Community",
+      "area": "Global dev",
+      "purpose": "LINE bot tutorials, mostly Thai and Taiwanese authors",
+      "priority": "P2",
+      "fetch": "RSS",
+      "http_status": "200"
+    },
+    {
+      "name": "Medium tag: line-messaging-api",
+      "url": "https://medium.com/feed/tag/line-messaging-api",
+      "type": "Community",
+      "area": "Global dev",
+      "purpose": "Messaging API tutorials",
+      "priority": "P2",
+      "fetch": "RSS",
+      "http_status": "200"
+    },
+    {
+      "name": "dev.to tag: linebot",
+      "url": "https://dev.to/feed/tag/linebot",
+      "type": "Community",
+      "area": "Global dev",
+      "purpose": "English LINE bot posts",
+      "priority": "P2",
+      "fetch": "RSS",
+      "http_status": "200"
+    },
+    {
+      "name": "Hacker News (Algolia API)",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?query=LINE%20bot&tags=story",
+      "type": "Community",
+      "area": "Global dev",
+      "purpose": "HN stories mentioning LINE bot / Messaging API / LIFF / LY Corp",
+      "priority": "P2",
+      "fetch": "JSON API",
+      "http_status": "200"
+    },
+    {
+      "name": "Google News: LINE Messaging API (EN)",
+      "url": "https://news.google.com/rss/search?q=%22LINE+Messaging+API%22+OR+%22LINE+bot%22+OR+%22LINE+Official+Account%22+when:7d&hl=en-US&gl=US&ceid=US:en",
+      "type": "News search",
+      "area": "Global market",
+      "purpose": "English coverage of LINE bots and OA",
+      "priority": "P1",
+      "fetch": "RSS",
+      "http_status": "200"
+    },
+    {
+      "name": "Google News: LINE OA / แชทบอท LINE (TH)",
+      "url": "https://news.google.com/rss/search?q=%22LINE+OA%22+OR+%22LINE+Official+Account%22+OR+%22LINE+%E0%B9%81%E0%B8%8A%E0%B8%97%E0%B8%9A%E0%B8%AD%E0%B8%97%22+when:7d&hl=th&gl=TH&ceid=TH:th",
+      "type": "News search",
+      "area": "Thailand market",
+      "purpose": "Thai business news on LINE OA, chatbots, LINE Thailand",
+      "priority": "P0",
+      "fetch": "RSS",
+      "http_status": "200"
+    },
+    {
+      "name": "Google News: LINE公式アカウント / LINEヤフー (JA)",
+      "url": "https://news.google.com/rss/search?q=%22LINE%E5%85%AC%E5%BC%8F%E3%82%A2%E3%82%AB%E3%82%A6%E3%83%B3%E3%83%88%22+OR+%22LINE+Bot%22+OR+%22LINE%E3%83%9F%E3%83%8B%E3%82%A2%E3%83%97%E3%83%AA%22+when:7d&hl=ja&gl=JP&ceid=JP:ja",
+      "type": "News search",
+      "area": "Japan market",
+      "purpose": "Japanese news on LINE OA, LINE MINI App, LINE bots",
+      "priority": "P0",
+      "fetch": "RSS",
+      "http_status": "200"
+    },
+    {
+      "name": "Google News: LINE 官方帳號 (TW)",
+      "url": "https://news.google.com/rss/search?q=%22LINE+%E5%AE%98%E6%96%B9%E5%B8%B3%E8%99%9F%22+OR+%22LINE+Bot%22+-%22LINE+TODAY%22+when:7d&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+      "type": "News search",
+      "area": "Taiwan market",
+      "purpose": "Taiwanese news on LINE OA and bots",
+      "priority": "P1",
+      "fetch": "RSS",
+      "http_status": "200"
+    },
+    {
+      "name": "X: @LINE_DEV",
+      "url": "https://x.com/LINE_DEV",
+      "type": "X account",
+      "area": "Platform changelog",
+      "purpose": "LINE Developers official account (JA); its bio points to @lycorptech_jp for new posts",
+      "priority": "P1",
+      "fetch": "X API user timeline",
+      "http_status": "X-API-verified"
+    },
+    {
+      "name": "X: @lycorptech_jp",
+      "url": "https://x.com/lycorptech_jp",
+      "type": "X account",
+      "area": "Engineering",
+      "purpose": "LY Corporation tech account (JA), successor to @LINE_DEV",
+      "priority": "P1",
+      "fetch": "X API user timeline",
+      "http_status": "X-API-verified"
+    }
+  ]
+}
