@@ -1,0 +1,902 @@
+{
+  "title": "Beginner Dev Flow",
+  "eyebrow": "LINE Bot Basics",
+  "lede": "Eight short cards that take you from \"what is a webhook?\" to a deployed LINE bot with AI, rich UI and a web app. Read them in order, or jump to the step you are on.",
+  "verified": "2026-11-24",
+  "note": "Every link, endpoint and SDK version on these cards was checked against official LINE pages or the official SDK repositories on Nov 24, 2026. The echo bots in Step 04 and the AI handler in Step 06 were run locally against signed test webhooks.",
+  "cards": [
+    {
+      "step": "01",
+      "slug": "how-a-line-bot-works",
+      "phase": "Concepts",
+      "title": "How a LINE Bot Works",
+      "summary": "A LINE bot is a web server that LINE calls every time someone talks to your Official Account. Learn the four moving parts and the words you will see everywhere before you write any code.",
+      "tags": [
+        "Webhook",
+        "Messaging API",
+        "Channel",
+        "Reply vs Push"
+      ],
+      "level": "Beginner · 5 min read",
+      "goal": "Understand the round trip a message makes, from a user's phone to your server and back, and the handful of terms the LINE docs use for it.",
+      "learn": [
+        "The four pieces: user, LINE Platform, your bot server, Messaging API",
+        "What a webhook event looks like",
+        "Reply messages vs push messages",
+        "Provider, channel, channel secret and channel access token"
+      ],
+      "steps": [
+        {
+          "title": "A user sends a message",
+          "body": "Someone opens the chat with your LINE Official Account (OA) and types \"Hello\", taps a button, or adds you as a friend."
+        },
+        {
+          "title": "LINE calls your webhook",
+          "body": "The LINE Platform sends an HTTPS POST to the webhook URL you registered. The JSON body holds a list of `events` (message, follow, unfollow, postback and more), and the `x-line-signature` header proves it came from LINE."
+        },
+        {
+          "title": "Your server checks and reads it",
+          "body": "Your bot verifies the signature with the channel secret, then looks at each event: who sent it (`source.userId`), what they sent, and the one-time `replyToken`."
+        },
+        {
+          "title": "Your server answers through the Messaging API",
+          "body": "You call `https://api.line.me` with your channel access token. Most bots use the Reply API with the `replyToken`. To message someone later, without a fresh event, you use the Push API."
+        },
+        {
+          "title": "LINE delivers the message",
+          "body": "The user sees your answer in the chat. A single reply or push request can carry up to five message objects."
+        }
+      ],
+      "terms": [
+        [
+          "Provider",
+          "The company or person that owns your channels. Users get a different user ID for each provider."
+        ],
+        [
+          "Channel",
+          "The connection between your app and the LINE Platform. A bot uses a Messaging API channel."
+        ],
+        [
+          "Channel secret",
+          "The key used to check webhook signatures. Keep it on the server."
+        ],
+        [
+          "Channel access token",
+          "The bearer token your server sends when it calls the Messaging API."
+        ],
+        [
+          "Webhook URL",
+          "Your server's HTTPS endpoint. Only one can be set per channel."
+        ],
+        [
+          "replyToken",
+          "A one-time token inside an event, used to answer that event with the Reply API."
+        ]
+      ],
+      "code": [
+        {
+          "label": "A simplified webhook body for one text message (shape taken from the LINE docs)",
+          "lang": "json",
+          "code": "{\n  \"destination\": \"U8e742f61d673b39c7fff3cecb7536ef0\",\n  \"events\": [\n    {\n      \"type\": \"message\",\n      \"message\": { \"type\": \"text\", \"id\": \"...\", \"text\": \"Hello\" },\n      \"replyToken\": \"38ef843bde154d9b91c21320ffd17a0f\",\n      \"source\": { \"type\": \"user\", \"userId\": \"U4af4980629...\" },\n      \"webhookEventId\": \"01H810YECXQQZ37VAXPF6H9E6T\",\n      \"deliveryContext\": { \"isRedelivery\": false },\n      \"timestamp\": 1692251666727,\n      \"mode\": \"active\"\n    }\n  ]\n}"
+        }
+      ],
+      "gotchas": [
+        {
+          "title": "One webhook URL per channel",
+          "body": "A channel can point at only one bot server. If two tools both need the messages (say, a CRM and your own bot), one of them has to forward to the other."
+        },
+        {
+          "title": "Provider choice decides user IDs",
+          "body": "The same person has a different user ID under each provider, and a channel cannot move to another provider later. Put your bot, LINE Login and LIFF channels under one provider you control."
+        },
+        {
+          "title": "Don't filter by IP address",
+          "body": "LINE does not publish the IP addresses that send webhooks. Check the signature instead of using an IP allowlist."
+        },
+        {
+          "title": "The same event can arrive twice",
+          "body": "Network problems and redelivery can send an event more than once. Use `webhookEventId` to skip events you already handled."
+        }
+      ],
+      "links": [
+        {
+          "label": "Messaging API overview",
+          "url": "https://developers.line.biz/en/docs/messaging-api/overview/"
+        },
+        {
+          "label": "Receive messages (webhooks)",
+          "url": "https://developers.line.biz/en/docs/messaging-api/receiving-messages/"
+        },
+        {
+          "label": "Send messages: reply, push, multicast, broadcast",
+          "url": "https://developers.line.biz/en/docs/messaging-api/sending-messages/"
+        },
+        {
+          "label": "Messaging API development guidelines",
+          "url": "https://developers.line.biz/en/docs/messaging-api/development-guidelines/"
+        },
+        {
+          "label": "Messaging API reference",
+          "url": "https://developers.line.biz/en/reference/messaging-api/"
+        }
+      ]
+    },
+    {
+      "step": "02",
+      "slug": "account-and-channel-setup",
+      "phase": "Setup",
+      "title": "Account, Official Account & Messaging API Setup",
+      "summary": "Every bot starts as a LINE Official Account with the Messaging API turned on. Create the account, enable the API, and collect the two secrets your code needs.",
+      "tags": [
+        "Official Account",
+        "OA Manager",
+        "Developers Console",
+        "Channel access token"
+      ],
+      "level": "Beginner · 15 min hands-on",
+      "goal": "Finish with a working Messaging API channel, a channel secret and a channel access token saved in a local `.env` file, and auto-replies turned off so they don't fight your bot.",
+      "learn": [
+        "Why you now start in LINE Official Account Manager, not the Developers Console",
+        "Where to find the channel secret and channel access token",
+        "Which token type to use",
+        "Why to turn off the default auto-reply"
+      ],
+      "steps": [
+        {
+          "title": "Create a LINE Official Account",
+          "body": "Register a Business ID (with your LINE account or an email address) and fill in the entry form. Your new account appears in LINE Official Account Manager at manager.line.biz."
+        },
+        {
+          "title": "Enable the Messaging API",
+          "body": "In LINE Official Account Manager, open Settings, then Messaging API, and enable it. The first time, you register as a developer (name and email) and choose a provider. The provider cannot be changed later, so pick one you control."
+        },
+        {
+          "title": "Open the channel in the LINE Developers Console",
+          "body": "Log in to developers.line.biz/console with the same account, open the provider, and you will see the new Messaging API channel."
+        },
+        {
+          "title": "Copy the channel secret",
+          "body": "On the channel's Basic settings tab, copy the Channel secret. You need the Admin role on the channel to see or reissue it."
+        },
+        {
+          "title": "Issue a channel access token",
+          "body": "On the Messaging API tab, issue a channel access token for testing. For production, LINE recommends a channel access token with a user-specified expiration (v2.1); see the table below."
+        },
+        {
+          "title": "Turn off auto-replies",
+          "body": "Greeting messages and Auto-reply messages are on by default. While you build, turn them off in LINE Official Account Manager so you can tell which answers come from your bot."
+        },
+        {
+          "title": "Add your OA as a friend",
+          "body": "Scan the QR code on the Messaging API tab with your phone. You will test every step from this chat."
+        }
+      ],
+      "table": {
+        "caption": "Channel access token types (from the LINE Developers \"Channel access token\" page, checked Nov 24, 2026)",
+        "head": [
+          "Type",
+          "Validity",
+          "Tokens per channel"
+        ],
+        "rows": [
+          [
+            "User-specified expiration (v2.1), recommended",
+            "Up to 30 days",
+            "30"
+          ],
+          [
+            "Stateless",
+            "15 minutes",
+            "No limit"
+          ],
+          [
+            "Short-lived",
+            "30 days",
+            "30"
+          ],
+          [
+            "Long-lived",
+            "No expiry",
+            "1"
+          ]
+        ]
+      },
+      "code": [
+        {
+          "label": ".env in your project folder (never commit this file)",
+          "lang": "bash",
+          "code": "CHANNEL_SECRET=<channel secret from the Basic settings tab>\nCHANNEL_ACCESS_TOKEN=<token from the Messaging API tab>"
+        },
+        {
+          "label": ".gitignore",
+          "lang": "text",
+          "code": ".env\n.env.*\nnode_modules/"
+        }
+      ],
+      "gotchas": [
+        {
+          "title": "Looking for \"Create channel\" in the console",
+          "body": "Since September 4, 2024 you can no longer create a Messaging API channel directly in the LINE Developers Console. Start from LINE Official Account Manager."
+        },
+        {
+          "title": "Leaving auto-reply on",
+          "body": "With the default Auto-reply messages enabled, users get the canned answer and your bot's answer, and you can't tell which is which. Turn it off while you build."
+        },
+        {
+          "title": "Mixing up secret and token",
+          "body": "The channel secret checks incoming webhooks; the channel access token authorizes outgoing API calls. Swapping them makes signature checks fail or API calls return 401."
+        },
+        {
+          "title": "Picking a provider in a hurry",
+          "body": "A channel can't move to another provider, and user IDs differ per provider. Don't create your bot under an agency's or a tool vendor's provider unless you mean to."
+        }
+      ],
+      "links": [
+        {
+          "label": "Get started with the Messaging API",
+          "url": "https://developers.line.biz/en/docs/messaging-api/getting-started/"
+        },
+        {
+          "label": "Build a bot (webhook, token, auto-reply settings)",
+          "url": "https://developers.line.biz/en/docs/messaging-api/building-bot/"
+        },
+        {
+          "label": "Channel access token types",
+          "url": "https://developers.line.biz/en/docs/basics/channel-access-token/"
+        },
+        {
+          "label": "LINE Developers Console",
+          "url": "https://developers.line.biz/console/"
+        },
+        {
+          "label": "LINE Official Account Manager",
+          "url": "https://manager.line.biz/"
+        }
+      ]
+    },
+    {
+      "step": "03",
+      "slug": "local-dev-and-webhook-tunnel",
+      "phase": "Setup",
+      "title": "Local Dev Environment & HTTPS Webhook Tunnel",
+      "summary": "LINE can only call a public HTTPS address, not your laptop. Set up Node.js or Python, then use a tunnel so LINE can reach the bot running on your machine.",
+      "tags": [
+        "Node.js",
+        "Python",
+        "cloudflared",
+        "ngrok",
+        "Webhook URL"
+      ],
+      "level": "Beginner · 20 min hands-on",
+      "goal": "Run a bot on `localhost:3000`, expose it through a temporary HTTPS tunnel, and see the Verify button in the console say Success.",
+      "learn": [
+        "The runtime versions the current official SDKs need",
+        "How to start a project for Node.js or Python",
+        "Two free ways to get a temporary HTTPS URL",
+        "How to register and verify the webhook URL"
+      ],
+      "steps": [
+        {
+          "title": "Install a runtime",
+          "body": "The Node.js SDK `@line/bot-sdk` 11.4.0 needs Node.js 22 or newer. The Python SDK `line-bot-sdk` 3.27.0 needs Python 3.10 or newer. (Latest versions as of Nov 24, 2026.)"
+        },
+        {
+          "title": "Create the project",
+          "body": "Make a folder, install the SDK and a web framework (Express for Node.js, Flask for Python), and put your two secrets in `.env` as in Step 02."
+        },
+        {
+          "title": "Start your bot locally",
+          "body": "Use the echo bot from Step 04. It listens on port 3000 with the webhook path `/callback`."
+        },
+        {
+          "title": "Open a tunnel",
+          "body": "Run `cloudflared tunnel --url http://localhost:3000` (no account needed; prints a temporary trycloudflare.com URL) or `ngrok http 3000` (needs a free ngrok account and authtoken)."
+        },
+        {
+          "title": "Register the webhook URL",
+          "body": "In the Developers Console, Messaging API tab, edit Webhook URL to `https://<your-tunnel-host>/callback`, click Update, then Verify. Turn on Use webhook."
+        },
+        {
+          "title": "Send a test message",
+          "body": "Message your OA from your phone and watch your terminal log the event."
+        }
+      ],
+      "code": [
+        {
+          "label": "Node.js project",
+          "lang": "bash",
+          "code": "mkdir my-line-bot && cd my-line-bot\nnpm init -y\nnpm pkg set type=module\nnpm install @line/bot-sdk express\n# Node.js 22 can load .env without extra packages:\nnode --env-file=.env index.js"
+        },
+        {
+          "label": "Python project",
+          "lang": "bash",
+          "code": "mkdir my-line-bot && cd my-line-bot\npython3 -m venv .venv && source .venv/bin/activate\npip install line-bot-sdk flask\nexport $(grep -v '^#' .env | xargs)   # load .env into this shell\npython app.py"
+        },
+        {
+          "label": "Temporary HTTPS tunnel (pick one, in a second terminal)",
+          "lang": "bash",
+          "code": "cloudflared tunnel --url http://localhost:3000\n# or\nngrok http 3000"
+        }
+      ],
+      "gotchas": [
+        {
+          "title": "Using http:// or a self-signed certificate",
+          "body": "The webhook URL must be HTTPS with a certificate from a widely trusted authority. `http://localhost` and self-signed certificates are rejected."
+        },
+        {
+          "title": "Forgetting the path",
+          "body": "Register `https://.../callback`, not just the host. Without the path your server answers 404 and Verify fails."
+        },
+        {
+          "title": "Tunnel URL changed",
+          "body": "A cloudflared Quick Tunnel URL stops working when you stop the process, and a new run gives a new URL. Update the webhook URL each time, or use a fixed domain later."
+        },
+        {
+          "title": "Verify sends no events",
+          "body": "The Verify button posts a body with an empty `events` array. Your code must accept that and still answer 200."
+        }
+      ],
+      "links": [
+        {
+          "label": "Build a bot: set a webhook URL",
+          "url": "https://developers.line.biz/en/docs/messaging-api/building-bot/"
+        },
+        {
+          "label": "Cloudflare Quick Tunnels (trycloudflare)",
+          "url": "https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/"
+        },
+        {
+          "label": "ngrok getting started",
+          "url": "https://ngrok.com/docs/getting-started/"
+        },
+        {
+          "label": "line/line-bot-sdk-nodejs on GitHub",
+          "url": "https://github.com/line/line-bot-sdk-nodejs"
+        },
+        {
+          "label": "line/line-bot-sdk-python on GitHub",
+          "url": "https://github.com/line/line-bot-sdk-python"
+        },
+        {
+          "label": "line-bot-sdk on PyPI",
+          "url": "https://pypi.org/project/line-bot-sdk/"
+        }
+      ]
+    },
+    {
+      "step": "04",
+      "slug": "signature-and-echo-bot",
+      "phase": "Build",
+      "title": "Signature Verification & Your First Echo Bot",
+      "summary": "Your first bot repeats whatever the user types. It also teaches the two habits every LINE bot needs: check the signature on the raw body, and answer with the reply token right away.",
+      "tags": [
+        "x-line-signature",
+        "HMAC-SHA256",
+        "Reply API",
+        "Echo bot"
+      ],
+      "level": "Beginner · 20 min hands-on",
+      "goal": "Get a working echo bot in Node.js or Python that rejects fake requests and replies to real ones.",
+      "learn": [
+        "How `x-line-signature` is checked",
+        "The minimal echo bot with the current official SDKs",
+        "Why the raw body matters",
+        "Reply token rules"
+      ],
+      "steps": [
+        {
+          "title": "Keep the raw body",
+          "body": "Read the request body exactly as it arrived. Don't parse, pretty-print or re-encode it before the signature check."
+        },
+        {
+          "title": "Check the signature",
+          "body": "Compute HMAC-SHA256 of the raw body with your channel secret, base64-encode it, and compare it with `x-line-signature`. The SDKs do this for you: `line.middleware()` in Node.js and `WebhookHandler.handle()` in Python."
+        },
+        {
+          "title": "Reject anything that fails",
+          "body": "If the header is missing or doesn't match, stop and return an error. Don't process the events."
+        },
+        {
+          "title": "Reply to text messages",
+          "body": "For each `message` event with a text message, call the Reply API with the event's `replyToken` and up to five message objects."
+        },
+        {
+          "title": "Return 200",
+          "body": "Answer the webhook with HTTP 200 so LINE knows you received it."
+        }
+      ],
+      "code": [
+        {
+          "label": "Node.js: index.js (@line/bot-sdk 11.x, Express 5). Tested locally: valid signature 200, bad signature 401.",
+          "lang": "javascript",
+          "code": "import * as line from \"@line/bot-sdk\";\nimport express from \"express\";\n\nconst config = { channelSecret: process.env.CHANNEL_SECRET };\nconst client = line.LineBotClient.fromChannelAccessToken({\n  channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN,\n});\n\nconst app = express();\n\n// line.middleware() reads the raw body and checks x-line-signature.\n// Do not add express.json() before it.\napp.post(\"/callback\", line.middleware(config), async (req, res) => {\n  try {\n    await Promise.all(req.body.events.map(handleEvent));\n    res.status(200).end();\n  } catch (err) {\n    console.error(err);\n    res.status(500).end();\n  }\n});\n\nasync function handleEvent(event) {\n  if (event.type !== \"message\" || event.message.type !== \"text\") return null;\n  return client.replyMessage({\n    replyToken: event.replyToken,\n    messages: [{ type: \"text\", text: event.message.text }],\n  });\n}\n\n// Turn a bad or missing signature into 401 instead of a 500.\napp.use((err, req, res, next) => {\n  if (err instanceof line.SignatureValidationFailed) return res.status(401).end();\n  if (err instanceof line.JSONParseError) return res.status(400).end();\n  next(err);\n});\n\nconst port = process.env.PORT || 3000;\napp.listen(port, () => console.log(`listening on ${port}`));"
+        },
+        {
+          "label": "Python: app.py (line-bot-sdk 3.x, Flask). Tested locally: valid signature 200, bad signature 400.",
+          "lang": "python",
+          "code": "import os\nfrom flask import Flask, request, abort\nfrom linebot.v3 import WebhookHandler\nfrom linebot.v3.exceptions import InvalidSignatureError\nfrom linebot.v3.messaging import (\n    Configuration, ApiClient, MessagingApi, ReplyMessageRequest, TextMessage,\n)\nfrom linebot.v3.webhooks import MessageEvent, TextMessageContent\n\napp = Flask(__name__)\nconfiguration = Configuration(access_token=os.environ[\"CHANNEL_ACCESS_TOKEN\"])\nhandler = WebhookHandler(os.environ[\"CHANNEL_SECRET\"])\n\n\n@app.route(\"/callback\", methods=[\"POST\"])\ndef callback():\n    signature = request.headers.get(\"X-Line-Signature\", \"\")\n    body = request.get_data(as_text=True)  # raw body, exactly as received\n    try:\n        handler.handle(body, signature)\n    except InvalidSignatureError:\n        abort(400)\n    return \"OK\"\n\n\n@handler.add(MessageEvent, message=TextMessageContent)\ndef handle_message(event):\n    with ApiClient(configuration) as api_client:\n        MessagingApi(api_client).reply_message(\n            ReplyMessageRequest(\n                reply_token=event.reply_token,\n                messages=[TextMessage(text=event.message.text)],\n            )\n        )\n\n\nif __name__ == \"__main__\":\n    app.run(port=int(os.environ.get(\"PORT\", 3000)))"
+        },
+        {
+          "label": "Check a signature by hand with openssl (example values from the LINE docs)",
+          "lang": "bash",
+          "code": "echo -n '{\"destination\":\"U8e742f61d673b39c7fff3cecb7536ef0\",\"events\":[]}' \\\n  | openssl dgst -sha256 -hmac '8c570fa6dd201bb328f1c1eac23a96d8' -binary \\\n  | openssl base64\n# GhRKmvmHys4Pi8DxkF4+EayaH0OqtJtaZxgTD9fMDLs="
+        }
+      ],
+      "gotchas": [
+        {
+          "title": "Parsing JSON before the check",
+          "body": "In Express, a global `app.use(express.json())` placed before `line.middleware()` consumes the body, and every request fails the signature check. We reproduced this: even correctly signed requests got 401. Mount `line.middleware()` on the webhook route only, with no JSON parser in front."
+        },
+        {
+          "title": "Reusing or delaying the reply token",
+          "body": "A reply token works once. The reference says to use it within one minute of receiving the webhook and warns the limit can change, so reply as soon as you can. A second reply with the same token fails with \"Invalid reply token\"."
+        },
+        {
+          "title": "One reply per event",
+          "body": "Need to send three bubbles? Put them in one reply request (up to five message objects) instead of making three calls."
+        },
+        {
+          "title": "Secret was reissued",
+          "body": "If signatures suddenly fail after working fine, someone with Admin rights may have reissued the channel secret. Copy the new one from Basic settings."
+        }
+      ],
+      "links": [
+        {
+          "label": "Verify webhook signature (with common failures)",
+          "url": "https://developers.line.biz/en/docs/messaging-api/verify-webhook-signature/"
+        },
+        {
+          "label": "Send messages: reply messages",
+          "url": "https://developers.line.biz/en/docs/messaging-api/sending-messages/"
+        },
+        {
+          "label": "Official Node.js echo bot examples",
+          "url": "https://github.com/line/line-bot-sdk-nodejs"
+        },
+        {
+          "label": "Official Python SDK with Flask synopsis",
+          "url": "https://github.com/line/line-bot-sdk-python"
+        },
+        {
+          "label": "Messaging API SDKs list",
+          "url": "https://developers.line.biz/en/docs/messaging-api/line-bot-sdk/"
+        }
+      ]
+    },
+    {
+      "step": "05",
+      "slug": "quick-replies-flex-rich-menus",
+      "phase": "UI",
+      "title": "Interactive UI: Quick Replies, Flex Messages & Rich Menus",
+      "summary": "Buttons beat typing. Use quick replies for the next choice, Flex Messages for card layouts, and a rich menu for the menu that stays at the bottom of the chat.",
+      "tags": [
+        "Quick reply",
+        "Postback",
+        "Flex Message",
+        "Rich menu"
+      ],
+      "level": "Beginner · 10 min read",
+      "goal": "Know which of the three UI tools fits a job, and send your first quick reply and Flex Message.",
+      "learn": [
+        "Quick reply buttons and postback actions",
+        "Flex Message structure and the Flex Message Simulator",
+        "The new 20-level box nesting limit",
+        "Two ways to build a rich menu"
+      ],
+      "steps": [
+        {
+          "title": "Quick replies for the next step",
+          "body": "Attach up to 13 buttons to any message. They show above the keyboard and suit short choices like \"Yes / No\" or \"Pick a branch\"."
+        },
+        {
+          "title": "Postbacks for hidden data",
+          "body": "A postback action sends a `postback` event with your `data` string to the webhook, so you can tell which button was tapped without parsing text."
+        },
+        {
+          "title": "Flex Messages for rich cards",
+          "body": "Flex Messages are JSON layouts built from bubbles, boxes, text, images and buttons. Design them in the Flex Message Simulator, then paste the JSON into your code."
+        },
+        {
+          "title": "Mind the nesting limit",
+          "body": "Since November 19, 2026, a Flex Message whose boxes nest deeper than 20 levels (the outermost box is level 1) is rejected with 400 Bad Request. Check depth if your layouts are generated by code or an LLM."
+        },
+        {
+          "title": "Rich menus for always-on navigation",
+          "body": "A rich menu is the image menu at the bottom of the chat. Build a default menu in LINE Official Account Manager (quick, with click statistics), or use the API for per-user menus and tab switching."
+        }
+      ],
+      "code": [
+        {
+          "label": "Quick reply with a message action, a postback action and a location action",
+          "lang": "json",
+          "code": "{\n  \"type\": \"text\",\n  \"text\": \"What would you like to do?\",\n  \"quickReply\": {\n    \"items\": [\n      { \"type\": \"action\", \"action\": { \"type\": \"message\", \"label\": \"Opening hours\", \"text\": \"Opening hours\" } },\n      { \"type\": \"action\", \"action\": { \"type\": \"postback\", \"label\": \"Book a table\", \"data\": \"action=book\", \"displayText\": \"Book a table\" } },\n      { \"type\": \"action\", \"action\": { \"type\": \"location\", \"label\": \"Send my location\" } }\n    ]\n  }\n}"
+        },
+        {
+          "label": "Smallest Flex Message (from the LINE docs). Put it in the messages array of a reply.",
+          "lang": "json",
+          "code": "{\n  \"type\": \"flex\",\n  \"altText\": \"This is a Flex Message\",\n  \"contents\": {\n    \"type\": \"bubble\",\n    \"body\": {\n      \"type\": \"box\",\n      \"layout\": \"horizontal\",\n      \"contents\": [\n        { \"type\": \"text\", \"text\": \"Hello,\" },\n        { \"type\": \"text\", \"text\": \"World!\" }\n      ]\n    }\n  }\n}"
+        },
+        {
+          "label": "Default rich menu with the API: create, upload image, set default",
+          "lang": "bash",
+          "code": "# 1. Create the rich menu (returns a richMenuId)\ncurl -X POST https://api.line.me/v2/bot/richmenu \\\n  -H \"Authorization: Bearer $CHANNEL_ACCESS_TOKEN\" \\\n  -H \"Content-Type: application/json\" \\\n  -d @richmenu.json\n\n# 2. Upload the image (note the api-data.line.me host)\ncurl -X POST https://api-data.line.me/v2/bot/richmenu/{richMenuId}/content \\\n  -H \"Authorization: Bearer $CHANNEL_ACCESS_TOKEN\" \\\n  -H \"Content-Type: image/png\" \\\n  -T richmenu.png\n\n# 3. Make it the default menu for everyone\ncurl -X POST https://api.line.me/v2/bot/user/all/richmenu/{richMenuId} \\\n  -H \"Authorization: Bearer $CHANNEL_ACCESS_TOKEN\""
+        }
+      ],
+      "gotchas": [
+        {
+          "title": "Flex boxes nested too deep",
+          "body": "Recursive templates and LLM-generated layouts can exceed 20 levels of boxes and now fail with 400. Flatten the layout or cap the depth."
+        },
+        {
+          "title": "Missing altText",
+          "body": "Every Flex Message needs `altText`. It is what users see in notifications and the chat list."
+        },
+        {
+          "title": "Testing quick replies on desktop",
+          "body": "Quick reply is supported on LINE for iOS and Android. Test it on a phone."
+        },
+        {
+          "title": "Editing a rich menu from the wrong tool",
+          "body": "A rich menu made in LINE Official Account Manager can only be edited there, and one made with the API can only be edited by the API. Pick one tool per menu."
+        }
+      ],
+      "links": [
+        {
+          "label": "Use quick replies",
+          "url": "https://developers.line.biz/en/docs/messaging-api/using-quick-reply/"
+        },
+        {
+          "label": "Action objects (postback, message, URI and more)",
+          "url": "https://developers.line.biz/en/docs/messaging-api/actions/"
+        },
+        {
+          "label": "Send Flex Messages",
+          "url": "https://developers.line.biz/en/docs/messaging-api/using-flex-messages/"
+        },
+        {
+          "label": "Flex Message elements",
+          "url": "https://developers.line.biz/en/docs/messaging-api/flex-message-elements/"
+        },
+        {
+          "label": "Flex Message Simulator",
+          "url": "https://developers.line.biz/flex-simulator/"
+        },
+        {
+          "label": "News, Nov 19, 2026: Flex box nesting depth is now limited",
+          "url": "https://developers.line.biz/en/news/2026/11/19/flex-message-nested-boxes-validation/"
+        },
+        {
+          "label": "Rich menus overview",
+          "url": "https://developers.line.biz/en/docs/messaging-api/rich-menus-overview/"
+        },
+        {
+          "label": "Use rich menus (default menu with the API)",
+          "url": "https://developers.line.biz/en/docs/messaging-api/using-rich-menus/"
+        }
+      ]
+    },
+    {
+      "step": "06",
+      "slug": "connect-ai-or-no-code",
+      "phase": "AI",
+      "title": "Connecting an AI / LLM (or No-Code Builders)",
+      "summary": "An AI bot is the echo bot with a model call in the middle. The hard part is time: show a loading animation, keep short per-user memory, and reply before the token goes stale.",
+      "tags": [
+        "LLM",
+        "Loading animation",
+        "Conversation memory",
+        "Dify",
+        "n8n"
+      ],
+      "level": "Beginner to intermediate · 15 min read",
+      "goal": "Wire a language model into your bot without timeouts or double replies, or pick a no-code builder if you'd rather not run a server.",
+      "learn": [
+        "Acknowledge the webhook first, then think",
+        "The official loading animation endpoint",
+        "Simple per-user memory keyed by `userId`",
+        "No-code and low-code paths: Dify, n8n, Botpress, LINE Bot MCP Server"
+      ],
+      "steps": [
+        {
+          "title": "Acknowledge fast, work after",
+          "body": "LINE recommends processing webhook events asynchronously. Return 200 first, then call the model, so slow answers don't hold up the next webhook."
+        },
+        {
+          "title": "Show the loading animation",
+          "body": "Call `POST https://api.line.me/v2/bot/chat/loading/start` with `chatId` (the user ID) and `loadingSeconds` (5 to 60). It works in one-on-one chats only, shows only while the user has the chat open, and disappears when your message arrives."
+        },
+        {
+          "title": "Remember a little context",
+          "body": "Store the last few turns per `source.userId`. An in-memory Map is fine on your laptop; use Redis or a database once you deploy, because servers restart."
+        },
+        {
+          "title": "Reply once, quickly",
+          "body": "Use the reply token as soon as the answer is ready. If the model is too slow and the token has expired, a push message still works, but push counts against your monthly message quota."
+        },
+        {
+          "title": "Or skip the server",
+          "body": "Dify: the LINE Connect plugin (community-built, listed on Dify Marketplace) links a Dify app to an OA. n8n: use the Webhook node to receive events and the HTTP Request node to call the Messaging API. Botpress has a LINE integration. LY also publishes LINE Bot MCP Server (a preview) so an AI agent can send messages through MCP tools."
+        }
+      ],
+      "code": [
+        {
+          "label": "Node.js: AI handler with loading animation and per-user memory (@line/bot-sdk 11.x)",
+          "lang": "javascript",
+          "code": "// Same setup as Step 04, with a different route and handler.\nconst history = new Map(); // userId -> recent turns (use Redis or a DB in production)\n\napp.post(\"/callback\", line.middleware(config), (req, res) => {\n  res.status(200).end(); // acknowledge LINE right away\n  for (const event of req.body.events) {\n    handleEvent(event).catch(console.error); // slow work happens after\n  }\n});\n\nasync function handleEvent(event) {\n  if (event.type !== \"message\" || event.message.type !== \"text\") return;\n  const userId = event.source.userId;\n\n  // 1. Show the loading dots (1-on-1 chats only, 5 to 60 seconds).\n  if (event.source.type === \"user\") {\n    await client.showLoadingAnimation({ chatId: userId, loadingSeconds: 20 });\n  }\n\n  // 2. Keep a short history per user.\n  const turns = history.get(userId) ?? [];\n  turns.push({ role: \"user\", content: event.message.text });\n\n  // 3. Call your model. askLLM is your own function (OpenAI, Gemini, Typhoon, etc.).\n  const answer = await askLLM(turns.slice(-10));\n  turns.push({ role: \"assistant\", content: answer });\n  history.set(userId, turns.slice(-10));\n\n  // 4. Answer once with the free reply token.\n  await client.replyMessage({\n    replyToken: event.replyToken,\n    messages: [{ type: \"text\", text: answer }],\n  });\n}"
+        },
+        {
+          "label": "The loading animation endpoint with curl (from the LINE docs)",
+          "lang": "bash",
+          "code": "curl -X POST https://api.line.me/v2/bot/chat/loading/start \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer $CHANNEL_ACCESS_TOKEN\" \\\n  -d '{\"chatId\": \"U4af4980629...\", \"loadingSeconds\": 5}'"
+        }
+      ],
+      "gotchas": [
+        {
+          "title": "Waiting for the model inside the webhook",
+          "body": "If you call the model before answering the webhook, slow responses pile up. Acknowledge first. On serverless hosts, work after the response may be cut off, so use the platform's background task feature or a queue."
+        },
+        {
+          "title": "Loading animation in a group",
+          "body": "The animation only works for one-on-one chats. Passing a group ID won't show anything."
+        },
+        {
+          "title": "Using n8n's built-in Line node",
+          "body": "That node was for LINE Notify, which ended on April 1, 2025, and n8n marks it deprecated from version 1.64.0. It cannot run a Messaging API bot; use Webhook plus HTTP Request nodes."
+        },
+        {
+          "title": "Assuming replies are always free",
+          "body": "LINE for Business Thailand announced that from February 1, 2027 the Reply API is free only for the first 25,000 messages a month. Plan costs for AI bots in Thailand with that in mind (details in Step 08)."
+        }
+      ],
+      "links": [
+        {
+          "label": "Display a loading animation",
+          "url": "https://developers.line.biz/en/docs/messaging-api/use-loading-indicator/"
+        },
+        {
+          "label": "Receive messages: process events asynchronously, redelivery",
+          "url": "https://developers.line.biz/en/docs/messaging-api/receiving-messages/"
+        },
+        {
+          "label": "LINE Connect plugin on Dify Marketplace",
+          "url": "https://marketplace.dify.ai/plugin/suphachok/line-connect"
+        },
+        {
+          "label": "n8n Webhook node",
+          "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.webhook/"
+        },
+        {
+          "label": "n8n HTTP Request node",
+          "url": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.httprequest/"
+        },
+        {
+          "label": "n8n Line node (deprecated, LINE Notify only)",
+          "url": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.line/"
+        },
+        {
+          "label": "Botpress LINE integration",
+          "url": "https://botpress.com/integrations/line"
+        },
+        {
+          "label": "line/line-bot-mcp-server (preview)",
+          "url": "https://github.com/line/line-bot-mcp-server"
+        }
+      ]
+    },
+    {
+      "step": "07",
+      "slug": "liff-and-line-mini-apps",
+      "phase": "Web Apps",
+      "title": "Beyond Chat: LIFF & LINE MINI Apps",
+      "summary": "Some jobs need a real screen: forms, bookings, carts. LIFF and LINE MINI Apps open your web app inside LINE and tell it who the user is, with no separate app install.",
+      "tags": [
+        "LIFF",
+        "LINE MINI App",
+        "Create LIFF App",
+        "LIFF CLI"
+      ],
+      "level": "Beginner · 10 min read",
+      "goal": "Know when to move from chat to a web app, which channel type to use, and how to scaffold your first LIFF app.",
+      "learn": [
+        "What LIFF and LINE MINI App are",
+        "Why new LIFF apps belong on a LINE Login or LINE MINI App channel",
+        "Scaffolding with Create LIFF App or LIFF CLI",
+        "Verified vs unverified MINI Apps"
+      ],
+      "steps": [
+        {
+          "title": "Decide if chat is enough",
+          "body": "If users must fill several fields, pick dates or browse a list, a web page is kinder than ten chat turns. Open it from a rich menu, a Flex button or a link."
+        },
+        {
+          "title": "Pick the channel type",
+          "body": "LIFF apps can only be added to LINE Login or LINE MINI App channels, not to Messaging API channels. LINE recommends creating new LIFF apps as LINE MINI Apps, because LIFF will be folded into the LINE MINI App brand. Keep the channel under the same provider as your bot so user IDs match."
+        },
+        {
+          "title": "Scaffold the app",
+          "body": "Run `npx @line/create-liff-app` and choose a template (vanilla, React, Vue, Svelte, Next.js or Nuxt). Or install LIFF CLI (`@line/liff-cli`) to add channels, create LIFF apps and run `liff-cli init` from the terminal."
+        },
+        {
+          "title": "Initialize LIFF on every page load",
+          "body": "Call `liff.init()` before any other LIFF method, then read the user's profile or send messages on their behalf."
+        },
+        {
+          "title": "Grow into a MINI App",
+          "body": "A new LINE MINI App starts unverified, with some features restricted, until it passes LINE's verification review. Since March 11, 2026, anyone can publish LINE MINI Apps in Taiwan and Thailand."
+        }
+      ],
+      "code": [
+        {
+          "label": "Scaffold a LIFF app (official tools)",
+          "lang": "bash",
+          "code": "npx @line/create-liff-app\n# or, with LIFF CLI\nnpm install @line/liff-cli\nnpx liff-cli channel add <channelId>   # prompts for the channel secret\nnpx liff-cli init --channel-id <channelId> --name my-app \\\n  --endpoint-url https://example.com --view-type full"
+        },
+        {
+          "label": "Minimal LIFF page script",
+          "lang": "javascript",
+          "code": "// npm install @line/liff\nimport liff from \"@line/liff\";\n\nawait liff.init({ liffId: \"YOUR_LIFF_ID\" }); // from the LIFF tab in the console\n\nif (!liff.isLoggedIn()) {\n  liff.login(); // needed in external browsers and LINE's in-app browser\n} else {\n  const profile = await liff.getProfile();\n  document.querySelector(\"#hello\").textContent = `Hi, ${profile.displayName}`;\n}"
+        }
+      ],
+      "gotchas": [
+        {
+          "title": "Adding LIFF to the bot's Messaging API channel",
+          "body": "That is no longer allowed for new LIFF apps. Create a LINE Login or LINE MINI App channel under the same provider."
+        },
+        {
+          "title": "Different provider, different user ID",
+          "body": "If the LIFF channel and the bot sit under different providers, the same person shows two different user IDs and you can't join the data."
+        },
+        {
+          "title": "Calling LIFF methods before init",
+          "body": "Run `liff.init()` on every page load and wait for it to finish before calling other methods or changing the URL's query parameters."
+        }
+      ],
+      "links": [
+        {
+          "label": "LIFF overview",
+          "url": "https://developers.line.biz/en/docs/liff/overview/"
+        },
+        {
+          "label": "LIFF: create a channel (which channel types work)",
+          "url": "https://developers.line.biz/en/docs/liff/getting-started/"
+        },
+        {
+          "label": "Develop a LIFF app (init, login, profile)",
+          "url": "https://developers.line.biz/en/docs/liff/developing-liff-apps/"
+        },
+        {
+          "label": "Create LIFF App",
+          "url": "https://developers.line.biz/en/docs/liff/cli-tool-create-liff-app/"
+        },
+        {
+          "label": "line/liff-cli on GitHub",
+          "url": "https://github.com/line/liff-cli"
+        },
+        {
+          "label": "Introducing LINE MINI App",
+          "url": "https://developers.line.biz/en/docs/line-mini-app/discover/introduction/"
+        },
+        {
+          "label": "News, Mar 11, 2026: anyone can publish MINI Apps in Taiwan and Thailand",
+          "url": "https://developers.line.biz/en/news/2026/03/11/line-mini-app/"
+        }
+      ]
+    },
+    {
+      "step": "08",
+      "slug": "deploy-quotas-production",
+      "phase": "Ship",
+      "title": "Deploying, Quotas & Production Checklist",
+      "summary": "Move the bot from your laptop to a real HTTPS host, keep tokens out of Git, and know which messages cost money. Thailand's Reply API rules change on February 1, 2027.",
+      "tags": [
+        "Deploy",
+        "Message quota",
+        "Pricing",
+        "Security",
+        "Thailand"
+      ],
+      "level": "Beginner · 10 min read",
+      "goal": "Ship a bot you can leave running: hosted on HTTPS, secrets safe, costs understood, and logs you can debug with.",
+      "learn": [
+        "What counts toward your monthly message quota",
+        "Where to read official prices for Thailand, Japan and Taiwan",
+        "The 2027 Reply API change in Thailand",
+        "A short production checklist"
+      ],
+      "steps": [
+        {
+          "title": "Host it on HTTPS",
+          "body": "Any host with a trusted certificate works: a small VPS, a container platform or a serverless function. Point the webhook URL at it, click Verify, and keep the same `/callback` path."
+        },
+        {
+          "title": "Move secrets to the host",
+          "body": "Set `CHANNEL_SECRET` and `CHANNEL_ACCESS_TOKEN` in the host's environment or secret manager. For long-running bots, LINE recommends channel access tokens with a user-specified expiration (v2.1) or stateless tokens over the long-lived token."
+        },
+        {
+          "title": "Know what is counted",
+          "body": "On the LINE Developers pricing page, push, multicast, broadcast and narrowcast messages count toward your plan; reply messages do not. Messages are counted per recipient, not per message object. When you run out, sends fail with an error instead of going through."
+        },
+        {
+          "title": "Check the official plan for your country",
+          "body": "Plans differ by country. As an example, the LINE Developers pricing page lists Japan's plans as Communication (free, up to 200 messages a month), Light (JPY 5,000, up to 5,000) and Standard (JPY 15,000, up to 30,000), excluding tax (checked Nov 24, 2026). For Thailand and Taiwan, read the local LINE for Business pages linked below."
+        },
+        {
+          "title": "Plan for Thailand's Reply API change",
+          "body": "LINE for Business Thailand (announced Nov 9, 2026): from February 1, 2027, the Reply API stays free for the first 25,000 messages a month; above that you need the 5,000 THB a month Unlimited package, and to keep using the Reply API you register through an Agency Partner to move the account into AGP. Auto-response set up in LINE Official Account Manager is not affected."
+        },
+        {
+          "title": "Log and handle retries",
+          "body": "Log the `x-line-request-id` response header, time, endpoint and status for API calls, as the development guidelines suggest. If you turn on webhook redelivery, skip duplicates by `webhookEventId`."
+        }
+      ],
+      "checklist": [
+        "`.env` is in `.gitignore` and no token appears in Git history",
+        "Signature check runs on the raw body and rejects bad requests",
+        "Webhook returns 200 quickly; slow work runs after",
+        "Auto-reply in LINE Official Account Manager is off (or set on purpose)",
+        "You know how to revoke a channel access token and reissue the channel secret yourself",
+        "Third-party tools holding your token are on your list, so you can rotate it if they are breached",
+        "No load tests or bulk test traffic against the LINE Platform"
+      ],
+      "code": [
+        {
+          "label": "Check this month's quota and usage",
+          "lang": "bash",
+          "code": "# Monthly limit for counted messages\ncurl -s https://api.line.me/v2/bot/message/quota \\\n  -H \"Authorization: Bearer $CHANNEL_ACCESS_TOKEN\"\n\n# Counted messages sent so far this month\ncurl -s https://api.line.me/v2/bot/message/quota/consumption \\\n  -H \"Authorization: Bearer $CHANNEL_ACCESS_TOKEN\""
+        }
+      ],
+      "gotchas": [
+        {
+          "title": "Committing .env",
+          "body": "A pushed token is a leaked token, even if you delete it in the next commit. Revoke it and issue a new one, then reissue the channel secret if that leaked too."
+        },
+        {
+          "title": "Tokens held by outside tools",
+          "body": "In November 2026, Dentsu Digital reported that a breach of its TONARIWA tool exposed LINE OA integration access tokens for client companies. If a vendor holds your token, know how to revoke and reissue it yourself."
+        },
+        {
+          "title": "Push fallback eats the quota",
+          "body": "Falling back to push when a reply token expires is fine, but every push counts. A slow AI bot that always pushes can hit the free limit fast."
+        },
+        {
+          "title": "Load testing through LINE",
+          "body": "The development guidelines prohibit load tests and mass requests through the LINE Platform. Load-test your own server with fake signed webhooks instead."
+        }
+      ],
+      "links": [
+        {
+          "label": "Messaging API pricing (what counts, Japan example)",
+          "url": "https://developers.line.biz/en/docs/messaging-api/pricing/"
+        },
+        {
+          "label": "LINE for Business Thailand: Reply API changes from Feb 1, 2027 (Thai)",
+          "url": "https://lineforbusiness.com/th/news/20261030-WJF"
+        },
+        {
+          "label": "LINE for Business Thailand: OA broadcast message packages (Thai)",
+          "url": "https://lineforbusiness.com/th/service/line-oa-features/broadcast-message"
+        },
+        {
+          "label": "LY for Business Japan: LINE Official Account plans",
+          "url": "https://www.lycbiz.com/jp/service/line-official-account/plan/"
+        },
+        {
+          "label": "LINE for Business Taiwan: LINE Official Account",
+          "url": "https://tw.linebiz.com/service/account-solutions/line-official-account/"
+        },
+        {
+          "label": "Channel access token types and revocation",
+          "url": "https://developers.line.biz/en/docs/basics/channel-access-token/"
+        },
+        {
+          "label": "Messaging API development guidelines",
+          "url": "https://developers.line.biz/en/docs/messaging-api/development-guidelines/"
+        },
+        {
+          "label": "Dentsu Digital TONARIWA incident report (Japanese)",
+          "url": "https://www.dentsudigital.co.jp/news/updates/services/2026-1112-001112"
+        }
+      ]
+    }
+  ]
+}

@@ -12,6 +12,7 @@ Daily research digest on LINE bot development and the LINE platform, published a
 - `preferences.md`: scope, style and what to skip
 - `digests/YYYY-MM-DD.md`: the day's digest in full
 - `digests/YYYY-MM-DD.json`: structured data the site is built from
+- `basics/cards.json`: the Beginner Dev Flow cards (8 steps), rendered to `/basics/` and `/basics/<slug>/`
 - `weekly/`: optional weekly JSON (same format as Agent Research Bot); empty for now
 - `site/build.py`: reads `digests/*.json` and `weekly/*.json`, writes static pages to `site/dist/` (Python 3, no dependencies)
 - `site/assets/`: card images downloaded from real sources; the JSON records where each came from
@@ -37,6 +38,39 @@ Daily research digest on LINE bot development and the LINE platform, published a
   ]
 }
 ```
+
+## Basics (Beginner Dev Flow cards)
+
+`basics/cards.json` holds the beginner cards shown at https://line-bot-research.pages.dev/basics/. `site/build.py` renders a roadmap plus card grid at `/basics/` and one page per card at `/basics/<slug>/`, with Previous / Next step links in file order. The home page shows a starter strip linking to `/basics/`.
+
+Top-level fields: `title`, `eyebrow`, `lede`, `verified` (YYYY-MM-DD the links were last checked), `note`, `cards`.
+
+Each card:
+
+```json
+{
+  "step": "04", "slug": "signature-and-echo-bot", "phase": "Build",
+  "title": "Card title", "summary": "Two sentences for the grid.",
+  "tags": ["..."], "level": "Beginner · 20 min hands-on",
+  "goal": "One-sentence goal", "learn": ["bullet", "..."],
+  "steps": [{"title": "Step title", "body": "Text; `backticks` become code"}],
+  "terms": [["Term", "Definition"]],
+  "table": {"caption": "...", "head": ["..."], "rows": [["..."]]},
+  "code": [{"label": "Caption", "lang": "javascript", "code": "..."}],
+  "checklist": ["..."],
+  "gotchas": [{"title": "Pitfall", "body": "What happens and the fix"}],
+  "links": [{"label": "Descriptive label", "url": "https://official.page/"}]
+}
+```
+
+`terms`, `table`, `code` and `checklist` are optional. To add or edit a card:
+
+1. Edit `basics/cards.json` (keep `slug` unique; order in the file is the step order).
+2. Only cite pages you opened: official LINE Developers docs, LINE for Business pages, or official SDK repos. Re-check every link returns 200 and update `verified`.
+3. Test code samples before publishing (signed test webhooks for bot code). No em dashes; `daily.sh` rejects them.
+4. `python3 site/build.py`, preview locally, then commit and deploy as below (or let the next `daily.sh` run ship it).
+
+Quick link check: `python3 -c "import json;[print(l['url']) for c in json.load(open('basics/cards.json'))['cards'] for l in c['links']]" | sort -u | xargs -n1 curl -s -o /dev/null -L -w '%{http_code} %{url_effective}\n'`
 
 ## Daily procedure
 

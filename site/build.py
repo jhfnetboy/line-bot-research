@@ -150,7 +150,7 @@ def week_href(root: str, weeks: list[str], key: str) -> str:
 
 
 def nav_html(root: str, current: str) -> str:
-    links = [("home", "Home", root), ("weekly", "Weekly", f"{root}weekly/"), ("archive", "Archive", f"{root}archive/"), ("about", "About", f"{root}about/")]
+    links = [("home", "Home", root), ("basics", "Basics", f"{root}basics/"), ("weekly", "Weekly", f"{root}weekly/"), ("archive", "Archive", f"{root}archive/"), ("about", "About", f"{root}about/")]
     parts = []
     for key, label, href in links:
         cls = ' class="current"' if key == current else ""
@@ -192,6 +192,7 @@ def footer_html(root: str) -> str:
         f'<footer class="site-footer">'
         f"<p>{esc(SITE_TITLE)}"
         f' · <a href="{esc(root)}">Home</a>'
+        f' · <a href="{esc(root)}basics/">Basics</a>'
         f' · <a href="{esc(root)}weekly/">Weekly</a>'
         f' · <a href="{esc(root)}archive/">Archive</a>'
         f' · <a href="{esc(root)}about/">About</a>'
@@ -294,7 +295,7 @@ def render_index_page(entries: list[dict], weeks: list[str], key: str, root: str
         f' · {total_days} day{"s" if total_days != 1 else ""} over {len(weeks)} week{"s" if len(weeks) != 1 else ""} in total. Older issues: use Previous week or the <a href="{esc(root)}archive/">monthly archive</a>.</p>'
     )
     if latest:
-        intro = intro_block_html(include_sources=False, about_url=f"{root}about/")
+        intro = starter_strip_html(root) + intro_block_html(include_sources=False, about_url=f"{root}about/")
         title = SITE_TITLE
     else:
         intro = ""
@@ -445,7 +446,7 @@ def render_404(root: str) -> str:
     {nav_html(root, "")}
     <h1>Page not found</h1>
     <p>No digest exists at this address.</p>
-    <p><a href="{esc(root)}">Back to home</a> · <a href="{esc(root)}weekly/">Weekly</a> · <a href="{esc(root)}archive/">Archive</a> · <a href="{esc(root)}about/">About</a></p>
+    <p><a href="{esc(root)}">Back to home</a> · <a href="{esc(root)}basics/">Basics</a> · <a href="{esc(root)}weekly/">Weekly</a> · <a href="{esc(root)}archive/">Archive</a> · <a href="{esc(root)}about/">About</a></p>
   </main>
 </body>
 </html>
@@ -1000,6 +1001,443 @@ def render_weekly_index(weeklies: list[dict], overviews: list[dict], root: str) 
 """
 
 
+# ---------------------------------------------------------------------------
+# Basics: beginner dev-flow cards from ../basics/cards.json
+# ---------------------------------------------------------------------------
+
+def load_basics(path: Path) -> dict:
+    if not path.is_file():
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    cards = data.get("cards") or []
+    slugs = [c.get("slug") for c in cards]
+    if len(set(slugs)) != len(slugs) or not all(slugs):
+        raise SystemExit("basics/cards.json: every card needs a unique slug")
+    return data
+
+
+def inline_html(text: str) -> str:
+    """Escape text, then turn `code` spans into <code>."""
+    out = esc(text or "")
+    return re.sub(r"`([^`]+)`", r"<code>\1</code>", out)
+
+
+def url_host(url: str) -> str:
+    m = re.match(r"^https?://([^/]+)", url or "")
+    return m.group(1) if m else ""
+
+
+def starter_strip_html(root: str) -> str:
+    return (
+        f'<aside class="starter-strip" aria-label="Beginner guide">'
+        f'<span class="starter-icon" aria-hidden="true">01→08</span>'
+        f'<p><strong>New to LINE bots?</strong> Start with the 8-step Beginner Dev Flow cards: '
+        f'setup, webhooks, Flex Messages, AI, LIFF and deployment.</p>'
+        f'<a class="starter-cta" href="{esc(root)}basics/">Open the Basics →</a>'
+        f"</aside>"
+    )
+
+
+def basics_roadmap_html(cards: list[dict], root: str, current: str = "") -> str:
+    parts = []
+    for c in cards:
+        cls = ' class="current"' if c["slug"] == current else ""
+        aria = ' aria-current="step"' if c["slug"] == current else ""
+        parts.append(
+            f'<li{cls}><a href="{esc(root)}basics/{esc(c["slug"])}/"{aria}>'
+            f'<span class="rm-num">{esc(c["step"])}</span>'
+            f'<span class="rm-phase">{esc(c.get("phase", ""))}</span></a></li>'
+        )
+    return f'<ol class="roadmap" aria-label="Beginner dev flow steps">{"".join(parts)}</ol>'
+
+
+def render_basics_index(data: dict, root: str) -> str:
+    cards = data.get("cards") or []
+    grid = []
+    for c in cards:
+        tags = "".join(f"<li>{esc(t)}</li>" for t in (c.get("tags") or [])[:4])
+        grid.append(
+            f'<article class="basic-card">'
+            f'<a class="basic-card-link" href="{esc(root)}basics/{esc(c["slug"])}/">'
+            f'<div class="basic-card-top"><span class="step-num">{esc(c["step"])}</span>'
+            f'<span class="phase-pill">{esc(c.get("phase", ""))}</span></div>'
+            f'<h2>{esc(c["title"])}</h2>'
+            f'<p class="basic-summary">{esc(c.get("summary", ""))}</p>'
+            f'<ul class="tags">{tags}</ul>'
+            f'<p class="basic-level">{esc(c.get("level", ""))}</p>'
+            f"</a></article>"
+        )
+    title = f"{data.get('title', 'Basics')} · {SITE_TITLE}"
+    note = data.get("note", "")
+    return f"""{head_html(root, title, data.get("lede", SITE_LEDE))}
+<body>
+  <header class="site-header">
+    {nav_html(root, "basics")}
+    <p class="eyebrow">{esc(data.get("eyebrow", "Basics"))}</p>
+    <h1>{esc(data.get("title", "Basics"))}</h1>
+    <p class="lede">{esc(data.get("lede", ""))}</p>
+  </header>
+  <main class="basics-main">
+    {basics_roadmap_html(cards, root)}
+    <section class="basics-grid" aria-label="Beginner dev flow cards">{"".join(grid)}</section>
+    <p class="basics-note">{inline_html(note)}</p>
+  </main>
+  {footer_html(root)}
+</body>
+</html>
+"""
+
+
+COPY_SCRIPT = """<script>
+document.querySelectorAll('.code-block').forEach(function (block) {
+  var btn = block.querySelector('.copy-btn');
+  var code = block.querySelector('code');
+  if (!btn || !code || !navigator.clipboard) { if (btn) btn.hidden = true; return; }
+  btn.addEventListener('click', function () {
+    navigator.clipboard.writeText(code.innerText).then(function () {
+      btn.textContent = 'Copied';
+      setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
+    });
+  });
+});
+</script>"""
+
+
+def render_basics_card(data: dict, idx: int, root: str) -> str:
+    cards = data["cards"]
+    c = cards[idx]
+    prev_c = cards[idx - 1] if idx > 0 else None
+    next_c = cards[idx + 1] if idx + 1 < len(cards) else None
+    learn = "".join(f"<li>{inline_html(x)}</li>" for x in (c.get("learn") or []))
+    learn_html = f'<div class="learn"><h3>What you\'ll learn</h3><ul>{learn}</ul></div>' if learn else ""
+    steps = "".join(
+        f'<li><h3>{inline_html(s["title"])}</h3><p>{inline_html(s.get("body", ""))}</p></li>'
+        for s in (c.get("steps") or [])
+    )
+    sections = [f'<section class="flow"><h2>Step-by-step flow</h2><ol class="flow-list">{steps}</ol></section>']
+    terms = c.get("terms") or []
+    if terms:
+        dl = "".join(f"<div><dt>{esc(t[0])}</dt><dd>{inline_html(t[1])}</dd></div>" for t in terms)
+        sections.append(f'<section class="terms"><h2>Key terms</h2><dl>{dl}</dl></section>')
+    table = c.get("table")
+    if table:
+        head = "".join(f"<th scope=\"col\">{esc(h)}</th>" for h in table.get("head", []))
+        rows = "".join("<tr>" + "".join(f"<td>{esc(v)}</td>" for v in r) + "</tr>" for r in table.get("rows", []))
+        sections.append(
+            f'<section class="table-wrap"><table><caption>{esc(table.get("caption", ""))}</caption>'
+            f"<thead><tr>{head}</tr></thead><tbody>{rows}</tbody></table></section>"
+        )
+    codes = []
+    for block in c.get("code") or []:
+        lang = esc(block.get("lang", "text"))
+        codes.append(
+            f'<figure class="code-block"><figcaption><span>{inline_html(block.get("label", ""))}</span>'
+            f'<span class="code-tools"><span class="lang">{lang}</span>'
+            f'<button type="button" class="copy-btn">Copy</button></span></figcaption>'
+            f'<pre><code class="language-{lang}">{esc(block.get("code", ""))}</code></pre></figure>'
+        )
+    if codes:
+        sections.append(f'<section class="examples"><h2>Example</h2>{"".join(codes)}</section>')
+    checklist = c.get("checklist") or []
+    if checklist:
+        items = "".join(f"<li>{inline_html(x)}</li>" for x in checklist)
+        sections.append(f'<section class="checklist"><h2>Production checklist</h2><ul>{items}</ul></section>')
+    gotchas = "".join(
+        f'<div class="gotcha"><h3>{inline_html(g["title"])}</h3><p>{inline_html(g.get("body", ""))}</p></div>'
+        for g in (c.get("gotchas") or [])
+    )
+    if gotchas:
+        sections.append(f'<section class="gotchas" aria-label="Common beginner gotchas"><h2>Common beginner gotchas</h2>{gotchas}</section>')
+    links = "".join(
+        f'<li><a href="{esc(l["url"])}" rel="noopener noreferrer">{esc(l["label"])}</a>'
+        f'<span class="link-host">{esc(url_host(l["url"]))}</span></li>'
+        for l in (c.get("links") or [])
+    )
+    if links:
+        verified = data.get("verified", "")
+        vnote = f'<p class="links-note">Checked live on {esc(format_cn_date(verified))}.</p>' if verified else ""
+        sections.append(f'<section class="doc-links"><h2>Official sources</h2><ul>{links}</ul>{vnote}</section>')
+    left = (
+        f'<a class="prev" rel="prev" href="{esc(root)}basics/{esc(prev_c["slug"])}/"><small>← Previous step</small>'
+        f'<span>{esc(prev_c["step"])} · {esc(prev_c["title"])}</span></a>'
+        if prev_c else f'<a class="prev" href="{esc(root)}basics/"><small>← All steps</small><span>Beginner Dev Flow</span></a>'
+    )
+    right = (
+        f'<a class="next" rel="next" href="{esc(root)}basics/{esc(next_c["slug"])}/"><small>Next step →</small>'
+        f'<span>{esc(next_c["step"])} · {esc(next_c["title"])}</span></a>'
+        if next_c else f'<a class="next" href="{esc(root)}"><small>Done! Next →</small><span>Read the daily digest</span></a>'
+    )
+    tags = "".join(f"<li>{esc(t)}</li>" for t in (c.get("tags") or []))
+    title = f"Step {c['step']}: {c['title']} · {SITE_TITLE}"
+    return f"""{head_html(root, title, c.get("summary", SITE_LEDE))}
+<body>
+  <header class="day-header basic-header">
+    {nav_html(root, "basics")}
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="{esc(root)}basics/">Basics</a> <span aria-hidden="true">/</span> <span>Step {esc(c["step"])}</span></nav>
+    {basics_roadmap_html(cards, root, c["slug"])}
+    <p class="eyebrow">Step {esc(c["step"])} of {len(cards)} · {esc(c.get("phase", ""))}</p>
+    <h1 class="basic-title">{esc(c["title"])}</h1>
+    <p class="basic-meta">{esc(c.get("level", ""))}</p>
+    <ul class="tags">{tags}</ul>
+    <p class="lede">{esc(c.get("summary", ""))}</p>
+  </header>
+  <main class="basic-main">
+    <section class="goal"><h2>Goal</h2><p>{inline_html(c.get("goal", ""))}</p>{learn_html}</section>
+    {"".join(sections)}
+    <nav class="step-nav" aria-label="Adjacent steps">{left}{right}</nav>
+  </main>
+  {footer_html(root)}
+  {COPY_SCRIPT}
+</body>
+</html>
+"""
+
+
+BASICS_STYLES = """
+.starter-strip {
+  width: min(1080px, calc(100% - 2rem));
+  margin: 0 auto 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.85rem 1.1rem;
+  border-radius: var(--radius);
+  background: linear-gradient(120deg, #06C755 0%, #04813a 100%);
+  color: #ffffff;
+  box-shadow: var(--shadow);
+}
+.starter-strip p { margin: 0; flex: 1 1 22rem; }
+.starter-icon {
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+}
+.starter-cta {
+  color: #04813a;
+  background: #ffffff;
+  border-radius: 999px;
+  padding: 0.4rem 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.starter-cta:hover { color: #025c29; background: #eafbf0; }
+.basics-main, .basic-main {
+  width: min(1080px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding-bottom: 3rem;
+}
+.roadmap {
+  list-style: none;
+  margin: 0 0 1.6rem;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 0.4rem;
+  position: relative;
+}
+.roadmap li a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.55rem 0.2rem;
+  border-radius: 14px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  text-decoration: none;
+  color: var(--ink);
+}
+.roadmap li a:hover { border-color: var(--accent); }
+.roadmap .rm-num { font-weight: 700; font-size: 1.05rem; color: var(--accent); }
+.roadmap .rm-phase { font-size: 0.72rem; color: var(--muted); text-align: center; line-height: 1.2; }
+.roadmap li.current a { background: var(--accent); border-color: var(--accent); }
+.roadmap li.current .rm-num, .roadmap li.current .rm-phase { color: #ffffff; }
+.basic-header .roadmap { margin: 0.4rem 0 1.4rem; }
+.basics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 1.1rem;
+}
+.basic-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  border-top: 5px solid #06C755;
+}
+.basic-card-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  height: 100%;
+  padding: 1.1rem 1.2rem 1.2rem;
+  color: inherit;
+  text-decoration: none;
+}
+.basic-card-link:hover { color: inherit; }
+.basic-card-link:hover h2 { color: var(--accent); }
+.basic-card-top { display: flex; align-items: center; justify-content: space-between; }
+.step-num { font-size: 1.9rem; font-weight: 750; color: var(--accent); line-height: 1; }
+.phase-pill {
+  font-size: 0.75rem;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 0.12rem 0.6rem;
+}
+.basic-card h2 { font-size: 1.12rem; line-height: 1.35; margin: 0; }
+.basic-summary { margin: 0; color: var(--muted); font-size: 0.95rem; flex: 1; }
+.basic-level { margin: 0; font-size: 0.82rem; color: var(--muted); }
+.basics-note { color: var(--muted); font-size: 0.9rem; margin: 1.6rem 0 0; max-width: 46rem; }
+.breadcrumb { font-size: 0.9rem; color: var(--muted); margin-bottom: 0.8rem; }
+.breadcrumb a { color: var(--muted); }
+.basic-title { font-size: clamp(1.7rem, 4.2vw, 2.5rem) !important; font-family: var(--serif) !important; color: var(--ink) !important; font-weight: 650 !important; margin: 0.1rem 0 0.4rem !important; }
+.basic-meta { margin: 0 0 0.7rem; color: var(--muted); font-size: 0.92rem; }
+.basic-main > section { margin: 0 0 2rem; }
+.basic-main h2 {
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  margin: 0 0 0.8rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--line);
+}
+.basic-main h3 { font-size: 1.02rem; margin: 0 0 0.25rem; }
+.basic-main p { margin: 0; max-width: 48rem; }
+.basic-main code, .basics-note code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  background: var(--tag);
+  color: var(--tag-ink);
+  padding: 0.05rem 0.35rem;
+  border-radius: 6px;
+}
+.goal {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.15rem 1.3rem;
+  box-shadow: var(--shadow);
+}
+.goal h2 { border: 0; padding: 0; margin-bottom: 0.4rem; }
+.learn { margin-top: 0.9rem; }
+.learn h3 { font-size: 0.95rem; color: var(--muted); margin-bottom: 0.3rem; }
+.learn ul { margin: 0; padding-left: 1.2rem; }
+.flow-list { list-style: none; counter-reset: flow; margin: 0; padding: 0; display: grid; gap: 0.9rem; }
+.flow-list li {
+  counter-increment: flow;
+  position: relative;
+  padding: 0.1rem 0 0 2.8rem;
+}
+.flow-list li::before {
+  content: counter(flow);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  font-size: 0.95rem;
+}
+.terms dl { margin: 0; display: grid; gap: 0.6rem; }
+.terms dl div { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 0.8rem; }
+.terms dt { font-weight: 650; }
+.terms dd { margin: 0; }
+.table-wrap { overflow-x: auto; }
+.table-wrap table { border-collapse: collapse; width: 100%; background: var(--paper); border-radius: 12px; overflow: hidden; font-size: 0.95rem; }
+.table-wrap caption { text-align: left; color: var(--muted); font-size: 0.88rem; padding-bottom: 0.5rem; }
+.table-wrap th, .table-wrap td { padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--line); text-align: left; }
+.table-wrap th { background: var(--accent-soft); color: var(--tag-ink); }
+.code-block { margin: 0 0 1.1rem; border-radius: 14px; overflow: hidden; background: #0f1c15; box-shadow: var(--shadow); }
+.code-block figcaption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.55rem 0.9rem;
+  background: #16291f;
+  color: #cfe9d9;
+  font-size: 0.85rem;
+}
+.code-block figcaption code { background: rgba(255, 255, 255, 0.1); color: #e6f7ec; }
+.code-tools { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+.code-tools .lang { text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.08em; color: #8fc7a5; }
+.copy-btn {
+  font: inherit;
+  font-size: 0.78rem;
+  color: #0f1c15;
+  background: #06C755;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.15rem 0.7rem;
+  cursor: pointer;
+}
+.copy-btn:hover { background: #3ddc84; }
+.code-block pre { margin: 0; padding: 0.95rem 1rem; overflow-x: auto; line-height: 1.5; }
+.code-block pre code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #e6f7ec;
+  background: transparent;
+  padding: 0;
+  white-space: pre;
+}
+.checklist ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem; }
+.checklist li { position: relative; padding-left: 1.8rem; }
+.checklist li::before { content: "✓"; position: absolute; left: 0.2rem; color: var(--accent); font-weight: 700; }
+.gotchas { display: grid; gap: 0.75rem; }
+.gotchas h2 { margin-bottom: 0.1rem; }
+.gotcha {
+  background: #fff8e6;
+  border: 1px solid #f2d897;
+  border-left: 5px solid #e0a106;
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+}
+.gotcha h3 { color: #6b4a00; }
+.gotcha code { background: #fbeec8; color: #5a3e00; }
+.doc-links ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+.doc-links li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.7rem; }
+.link-host { color: var(--muted); font-size: 0.82rem; }
+.links-note { color: var(--muted); font-size: 0.85rem; margin-top: 0.7rem !important; }
+.step-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2.5rem; }
+.step-nav a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.9rem 1.1rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  text-decoration: none;
+  color: var(--ink);
+}
+.step-nav a:hover { border-color: var(--accent); color: var(--accent); }
+.step-nav small { color: var(--muted); font-size: 0.8rem; }
+.step-nav .next { text-align: right; }
+@media (max-width: 800px) {
+  .roadmap { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .terms dl div { grid-template-columns: 1fr; gap: 0.1rem; }
+}
+@media (max-width: 560px) {
+  .step-nav { grid-template-columns: 1fr; }
+  .step-nav .next { text-align: left; }
+  .code-block figcaption { flex-direction: column; align-items: flex-start; gap: 0.35rem; }
+}
+"""
+
+
 STYLES = """
 :root {
   --bg: #eef5f0;
@@ -1338,7 +1776,7 @@ def main() -> int:
     out_dir.mkdir(parents=True)
 
     existing = copy_images(days, here, out_dir / "assets")
-    write(out_dir / "styles.css", STYLES.strip() + "\n")
+    write(out_dir / "styles.css", (STYLES + BASICS_STYLES).strip() + "\n")
 
     weekly_dir = here.parent / "weekly"
     weeklies = load_weeklies(weekly_dir)
@@ -1389,6 +1827,13 @@ def main() -> int:
             render_day(day, root_for(base, 2), image_name(day) in existing, newer, older),
         )
 
+    basics = load_basics(here.parent / "basics" / "cards.json")
+    basics_cards = basics.get("cards") or []
+    if basics_cards:
+        write(out_dir / "basics" / "index.html", render_basics_index(basics, root_for(base, 1)))
+        for i, card in enumerate(basics_cards):
+            write(out_dir / "basics" / card["slug"] / "index.html", render_basics_card(basics, i, root_for(base, 2)))
+
     write(out_dir / "weekly" / "index.html", render_weekly_index(weeklies, overviews, root_for(base, 1)))
     week_keys = [w["week"] for w in weeklies]
     for week in weeklies:
@@ -1406,7 +1851,7 @@ def main() -> int:
     size = sum(p.stat().st_size for p in out_dir.rglob("*") if p.is_file())
     print(
         f"built {len(days)} day(s), {total_pages} week page(s), "
-        f"{len(weeklies)} weekly report(s), {len(overviews)} overview(s), "
+        f"{len(weeklies)} weekly report(s), {len(overviews)} overview(s), {len(basics_cards)} basics card(s), "
         f"{files} file(s), {size / 1024:.0f} KiB -> {out_dir}"
     )
     print(f"base path: {base or 'relative links'}")

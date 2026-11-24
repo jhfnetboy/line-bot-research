@@ -18,6 +18,11 @@ bad = [i.get("title") for i in j["items"] if not (i.get("url", "").startswith("h
 assert not bad, f"items missing url or date: {bad}"
 txt = open(f"digests/{d}.json", encoding="utf-8").read() + open(f"digests/{d}.md", encoding="utf-8").read()
 assert "\u2014" not in txt, "em dash found; rewrite without it"
+import os
+if os.path.exists("basics/cards.json"):
+    b = open("basics/cards.json", encoding="utf-8").read()
+    assert len(json.loads(b).get("cards", [])) > 0, "basics/cards.json has no cards"
+    assert "\u2014" not in b, "em dash found in basics/cards.json; rewrite without it"
 print(f"digest OK: {len(j['items'])} items")
 PY
 python3 scripts/make_sources.py $([ "${CHECK_SOURCES:-0}" = 1 ] && echo --check)
