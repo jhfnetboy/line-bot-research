@@ -1,0 +1,128 @@
+{
+  "date": "2026-11-25",
+  "coverage": "2026-11-23 to 2026-11-25 (Asia/Bangkok, UTC+7)",
+  "keywords": [
+    "LIFF old versions blocked",
+    "Update to LIFF 2.32.0",
+    "LLM guardrails on LINE",
+    "Municipal LINE OA AI",
+    "No SDK releases"
+  ],
+  "summary": "One change every LIFF developer must check today: LINE has started blocking LIFF SDK v2.20.0 to v2.31.0, so liff.login() fails and fixed CDN paths return 403; update to v2.32.0. Otherwise a quiet day: ABEJA shows LLM chat with ad rule guardrails on LINE for CHINTAI, two Japanese cities expand their LINE OAs, and there are no new SDK releases.",
+  "image": {
+    "source_url": "https://prtimes.jp/main/html/rd/p/000000255.000099719.html",
+    "credit": "Fujimino City (PR TIMES)",
+    "local_path": "assets/2026-11-25.jpg"
+  },
+  "items": [
+    {
+      "topic": "LIFF / LINE MINI App (breaking)",
+      "title": "LINE now blocks old LIFF SDK versions v2.20.0 to v2.31.0: liff.login() fails and fixed CDN paths return 403",
+      "summary": "In a notice dated Nov 24 and updated Nov 25, LINE Developers says it has carried out the usage restrictions announced on Oct 20 for LIFF SDK versions with a confirmed vulnerability (v2.20.0 to v2.31.0). Since Nov 24, liff.login() requests from those versions fail in external browsers and LINE's in-app browser, so affected LIFF apps and LINE MINI Apps may stop working. Since Nov 25, loading those versions from a CDN fixed path returns HTTP 403, so the script tag errors; LINE says it may take a day or more to take effect depending on user environment and cache. The CDN block does not cover the npm package, so npm users must still update. Fix: the CDN edge path (liff/edge/2/sdk.js) is already on v2.32.0; fixed-path users should load versions/2.32.0/sdk.js; npm users should run npm install @line/liff@2.32.0 (minimum safe version is v2.31.1).",
+      "url": "https://developers.line.biz/en/news/2026/11/24/liff-sdk-issue/",
+      "date": "2026-11-24",
+      "keywords": [
+        "LIFF SDK",
+        "security",
+        "liff.login",
+        "CDN 403",
+        "LINE MINI App"
+      ],
+      "links": [
+        {
+          "label": "Japanese notice",
+          "url": "https://developers.line.biz/ja/news/2026/11/24/liff-sdk-issue/",
+          "date": "2026-11-24"
+        },
+        {
+          "label": "LINE Developers news 2026 (Oct 20 vulnerability overview and LIFF v2.32.0 release)",
+          "url": "https://developers.line.biz/en/news/2026/",
+          "date": "2026-11-24"
+        },
+        {
+          "label": "LIFF v2.32.0 release notice",
+          "url": "https://developers.line.biz/en/news/2026/11/09/release-liff-2-32-0/",
+          "date": "2026-11-09"
+        }
+      ]
+    },
+    {
+      "topic": "AI bots on LINE (Japan)",
+      "title": "ABEJA adds free-form LLM chat with real estate ad rule checks to the 'CHINTAI Agent' LINE service",
+      "summary": "CHINTAI Agent is a rental search service with over 1 million LINE friends. Users can now type their wishes and questions freely on LINE and get property suggestions from an AI built on about 100,000 past human chat logs, with ABEJA's rental ad review AI checking the text against Japan's real estate ad display rules. ABEJA says generation now references the rules up front, uses multi-stage guardrails and auto-replaces risky phrases, cutting response time from several minutes (up to 10 or more) to a median of about 16 seconds. A useful pattern for anyone running LLM replies in a regulated industry on LINE.",
+      "url": "https://prtimes.jp/main/html/rd/p/000000244.000010628.html",
+      "date": "2026-11-24",
+      "keywords": [
+        "LLM guardrails",
+        "LINE OA",
+        "real estate",
+        "ABEJA",
+        "compliance"
+      ],
+      "links": []
+    },
+    {
+      "topic": "Government OA (Japan)",
+      "title": "Fujimino City plans an AI concierge, segment delivery and a tabbed rich menu for its LINE OA from Feb 1, 2027",
+      "summary": "Fujimino, Saitama, says its expanded LINE OA will answer residents' questions 24 hours a day using content from the city website, let followers pick categories such as child-rearing, events and disaster prevention instead of receiving every broadcast, split the rich menu into category tabs, send next-day garbage collection reminders for the user's area, and accept road and park problem reports with a photo and location. Start date is Feb 1, 2027.",
+      "url": "https://prtimes.jp/main/html/rd/p/000000255.000099719.html",
+      "date": "2026-11-24",
+      "keywords": [
+        "municipal LINE OA",
+        "AI concierge",
+        "segment delivery",
+        "rich menu tabs"
+      ],
+      "links": []
+    },
+    {
+      "topic": "Government OA (Japan)",
+      "title": "Ichinomiya City libraries open a LINE OA today with catalog search, reservations and a digital library card",
+      "summary": "From 9:00 on Nov 25, Ichinomiya, Aichi, runs a library LINE OA for search and reservations across five libraries. Linking a LINE account to the library user number shows the barcode library card without entering the number and password, and sends reservation notices and checkout notices in place of printed receipts. The city also starts online provisional user registration and online address or name changes.",
+      "url": "https://www.city.ichinomiya.aichi.jp/shisei/houdouhappyo/1068631/1076554/1077474.html",
+      "date": "2026-11-20",
+      "keywords": [
+        "account linking",
+        "library",
+        "municipal LINE OA"
+      ],
+      "links": [
+        {
+          "label": "Goguynet Ichinomiya report",
+          "url": "https://ichinomiya.goguynet.jp/2026/11/25/book_line/",
+          "date": "2026-11-25"
+        }
+      ]
+    },
+    {
+      "topic": "Platform status",
+      "title": "No new SDK releases; n8n 2.50.0 and 3.4.0 ship with no LINE changes; API Playground ends Nov 30",
+      "summary": "Apart from the LIFF restriction notice, there are no new LINE Developers notices. Latest SDK releases are unchanged: Python v3.27.0, Node.js v11.4.0 and PHP v12.9.0 (Oct 27); Java v10.2.0, Go v8.23.0 and Ruby v2.11.0 (Sep 29); line-bot-mcp-server v0.5.0; liff-cli v0.5.0; @line/liff 2.32.0 (Nov 9). n8n released 2.50.0 and 3.4.0 on Nov 24; the notes add a WhatsApp Channel Agent and Telegram node options but nothing for LINE. Dify's latest is still 1.20.0 (Nov 18). Reminder: the API Playground in the Messaging API reference shuts down on Nov 30.",
+      "url": "https://github.com/n8n-io/n8n/releases/tag/n8n%402.50.0",
+      "date": "2026-11-24",
+      "keywords": [
+        "No SDK releases",
+        "n8n",
+        "Dify",
+        "API Playground"
+      ],
+      "links": [
+        {
+          "label": "n8n 3.4.0 release",
+          "url": "https://github.com/n8n-io/n8n/releases/tag/n8n%403.4.0",
+          "date": "2026-11-24"
+        },
+        {
+          "label": "line-bot-sdk-nodejs releases",
+          "url": "https://github.com/line/line-bot-sdk-nodejs/releases",
+          "date": "2026-10-27"
+        },
+        {
+          "label": "API Playground discontinuation",
+          "url": "https://developers.line.biz/en/news/2026/11/13/api-playground-discontinuation/",
+          "date": "2026-11-13"
+        }
+      ]
+    }
+  ]
+}
