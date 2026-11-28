@@ -1,0 +1,276 @@
+{
+  "date": "2026-11-28",
+  "coverage": "2026-11-25 to 2026-11-28 (Asia/Bangkok, UTC+7); first issue since Nov 25",
+  "keywords": [
+    "LINE Platform outage",
+    "LINE OA data leak",
+    "Flex Message Simulator",
+    "Taiwan sticker block rule",
+    "OA AI agents"
+  ],
+  "summary": "Two short LINE Platform outages on Nov 26 caused Messaging API 5xx errors and webhook delays; use X-Line-Retry-Key for safe retries. Satudora disclosed a leak of 229,026 LINE OA friends' data from its vendor's development environment, and the Flex Message Simulator got a redesign. In Taiwan, blocking an OA will disable its free stickers from Nov 30 and LINE detailed its OA AI agent plan; no new SDK releases.",
+  "image": {
+    "source_url": "https://prtimes.jp/main/html/rd/p/000001856.000129774.html",
+    "credit": "LY Corporation (PR TIMES)",
+    "local_path": "assets/2026-11-28.jpg"
+  },
+  "items": [
+    {
+      "topic": "Platform status (outage)",
+      "title": "Two short LINE Platform outages on Nov 26: Messaging API 5xx and webhook delays, then LINE Login and LIFF",
+      "summary": "LINE Developers reports a network failure on Nov 26 from about 14:04 to 14:11 (UTC+9) that delayed or broke webhook delivery and returned 5xx errors on some Messaging API requests, and also hit LINE Login, LIFF/LINE MINI App and the LINE Developers Console. A second network failure from about 16:52 to 16:55 (UTC+9) affected LINE Login, LIFF/LINE MINI App and service messages. LINE says messages that were not properly sent will not count toward OA usage fees or sent message counts, and points to the X-Line-Retry-Key header for safe retries after 5xx errors or timeouts.",
+      "url": "https://developers.line.biz/en/news/2026/11/26/all-products-outage/",
+      "date": "2026-11-26",
+      "keywords": [
+        "Outage",
+        "Messaging API 5xx",
+        "Webhook delay",
+        "X-Line-Retry-Key"
+      ],
+      "links": [
+        {
+          "label": "LINE Login and LIFF/LINE MINI App outage notice",
+          "url": "https://developers.line.biz/en/news/2026/11/27/liff-line-login-outage/",
+          "date": "2026-11-27"
+        },
+        {
+          "label": "LINE Developers news 2026 (full text of both notices)",
+          "url": "https://developers.line.biz/en/news/2026/",
+          "date": "2026-11-27"
+        }
+      ]
+    },
+    {
+      "topic": "Security (Japan)",
+      "title": "Satudora: data on 229,026 LINE OA friends leaked from CyberAgent's development environment",
+      "summary": "Hokkaido drugstore chain Satudora said on Nov 25 that its app developer CyberAgent put a file with customer data in a publicly readable storage area of a development environment during a system migration. It was public from Jul 16, 2025 to Nov 18, 2026 and was downloaded by third parties at least 9 times. It covered people who friended Satudora's LINE OA between Jun 1, 2023 and Jul 15, 2025: email, gender, birth date, first name, EZOCA point number, total purchase amount, device and carrier, the LINE user ID valid only for that OA, and ad IDs. It was found through an outside vulnerability report. Another reminder to audit where vendors keep OA friend exports.",
+      "url": "https://www.itmedia.co.jp/news/article/2611/26/2000003469/",
+      "date": "2026-11-26",
+      "keywords": [
+        "Data leak",
+        "LINE user ID",
+        "Vendor risk",
+        "CyberAgent"
+      ],
+      "links": [
+        {
+          "label": "Nikkei report",
+          "url": "https://www.nikkei.com/article/DGXZQOFC255O20V21C26A1000000/",
+          "date": "2026-11-25"
+        }
+      ]
+    },
+    {
+      "topic": "Messaging API tools",
+      "title": "Flex Message Simulator redesigned: side-by-side preview, video playback, dark mode and screen size switch",
+      "summary": "The Flex Message Simulator now shows the tree view, preview and property areas side by side. The preview can play videos in Flex Messages and switch to the alternative content shown where video is not supported. Sending a test to your own LINE app is clearer (add the simulator's OA as a friend first, then get a verification code), and there is a dark mode plus buttons to preview different smartphone screen sizes.",
+      "url": "https://developers.line.biz/en/news/2026/11/25/flex-message-simulator-redesign/",
+      "date": "2026-11-25",
+      "keywords": [
+        "Flex Message Simulator",
+        "Flex Message",
+        "Video"
+      ],
+      "links": []
+    },
+    {
+      "topic": "OA policy (Taiwan)",
+      "title": "Taiwan from Nov 30: blocking an OA disables the free stickers and emoji it gave out",
+      "summary": "Announced at LINE BIZ CONVERGE 2026 on Nov 26: from Nov 30, users in Taiwan who block an OA that gave them free stickers or emoji see a warning, and after blocking they cannot use those stickers until they unblock. Reports say this also applies to stickers already downloaded. LINE says the same mechanism launched in Japan (in April, per CTWANT) cut OA block rates by 37.5%. Expect lower block rates on sticker campaigns, and plan for users who mute instead of block.",
+      "url": "https://ec.ltn.com.tw/article/breakingnews/5654394",
+      "date": "2026-11-26",
+      "keywords": [
+        "Sponsored stickers",
+        "Block rate",
+        "Taiwan",
+        "Policy"
+      ],
+      "links": [
+        {
+          "label": "CTWANT",
+          "url": "https://www.ctwant.com/article/508719/",
+          "date": "2026-11-27"
+        },
+        {
+          "label": "TVBS",
+          "url": "https://news.tvbs.com.tw/tech/4056824",
+          "date": "2026-11-27"
+        }
+      ]
+    },
+    {
+      "topic": "AI agents on LINE (Taiwan)",
+      "title": "LINE Taiwan details its AI agent plan: agent builder inside OA Plus, LINE Biz AI in OA Plus in H1 2027",
+      "summary": "Follow-up to our Nov 23 item. At LINE BIZ CONVERGE 2026 (Nov 26), LINE Taiwan described three agents: a Consumer Agent in chats, a Brand Agent built in the OA Plus back end where brands pick booking, sales or customer service roles and set them up in natural language, and LINE Biz AI, which went live on the LINE Biz-Solutions site in November for product Q&A and moves into OA Plus in H1 2027 to tag customers and suggest actions. LINE cites 22 million users and over 3.6 million OAs in Taiwan. A user survey released the same day says 93% penetration and 14 app opens a day on average.",
+      "url": "https://ec.ltn.com.tw/article/breakingnews/5654738",
+      "date": "2026-11-26",
+      "keywords": [
+        "AI agent platform",
+        "OA Plus",
+        "LINE Biz AI",
+        "Taiwan"
+      ],
+      "links": [
+        {
+          "label": "SETN report",
+          "url": "https://inews.setn.com/news/1945526",
+          "date": "2026-11-26"
+        },
+        {
+          "label": "LINE usage survey (NOWnews)",
+          "url": "https://www.nownews.com/news/6895814",
+          "date": "2026-11-26"
+        }
+      ]
+    },
+    {
+      "topic": "Case studies (Taiwan)",
+      "title": "LINE Biz-Solutions Awards 2026: SME winner GLike built parking info on Messaging API, LIFF and open data",
+      "summary": "The fourth awards had 133 entries and gave 9 gold and 6 silver awards. The best SME gold went to GLike, which uses the Messaging API, LIFF/LINE MINI App and city open data so users send a location and get parking spaces, traffic and payment info without an app; it has over 500,000 friends. Taiwan Cement's energy storage OA combines station booking, QR start and mobile payment for EV charging, with friend count up 454%.",
+      "url": "https://news.para-daily.com/2026/11/27/line-biz-solutions-awards-2026-new-function-1127/",
+      "date": "2026-11-27",
+      "keywords": [
+        "Awards",
+        "Messaging API",
+        "LIFF",
+        "Open data"
+      ],
+      "links": []
+    },
+    {
+      "topic": "Government OA (Taiwan)",
+      "title": "Hsinchu County starts a trial of its 'AI resident butler' LINE OA using an LLM with RAG",
+      "summary": "Launched on Nov 25, the county's LINE OA has an AI Q&A that answers welfare questions from the social affairs and elderly care departments using a large language model with retrieval augmented generation. A family tree tool matches families to subsidies, and the county plans opt-in proactive welfare notices. It will collect feedback during the trial.",
+      "url": "https://localtoday.tw/hsinchuCounty/news/a_mwxtiyhk_czgb2231",
+      "date": "2026-11-27",
+      "keywords": [
+        "Government OA",
+        "RAG",
+        "LLM",
+        "Taiwan"
+      ],
+      "links": [
+        {
+          "label": "Liberty Times report",
+          "url": "https://news.ltn.com.tw/news/life/breakingnews/5654140",
+          "date": "2026-11-26"
+        }
+      ]
+    },
+    {
+      "topic": "LY Corporation (Japan)",
+      "title": "LY Corporation signs an AX and DX partnership with Akita City, the first under its Customer Growth Consortium",
+      "summary": "Signed Nov 26. Plans to study include moving phone and counter reservations and orders to LINE MINI Apps, procedure guidance and document checklists on the city's LINE OA, linking ride booking to LINE, local products on Yahoo! Shopping, and generative AI training for city staff and businesses. Nikkei reports an Akita high school cafeteria now takes Christmas orders via a MINI App. Targets, timing and costs are still to be agreed.",
+      "url": "https://prtimes.jp/main/html/rd/p/000001856.000129774.html",
+      "date": "2026-11-26",
+      "keywords": [
+        "LY Corporation",
+        "Akita",
+        "LINE MINI App",
+        "Municipal DX"
+      ],
+      "links": [
+        {
+          "label": "Nikkei report",
+          "url": "https://www.nikkei.com/article/DGXZQOCC203K30Q6A121C2000000/",
+          "date": "2026-11-26"
+        }
+      ]
+    },
+    {
+      "topic": "OA features (Japan)",
+      "title": "CRM option now works in the LINE Official Account Manager app on phones and tablets",
+      "summary": "Since Nov 25, the Japanese OA CRM option (customer tags, customer info and segment or automated messages) can be set up and used in the OA Manager mobile app, not only on a PC.",
+      "url": "https://www.lycbiz.com/jp/column/line-official-account/crm/service-information/mobile-support/",
+      "date": "2026-11-25",
+      "keywords": [
+        "CRM option",
+        "OA Manager app",
+        "Japan"
+      ],
+      "links": []
+    },
+    {
+      "topic": "AI and MCP on LINE (Japan)",
+      "title": "Elmarke tests read-only AI over MCP that posts daily OA friend counts to chat",
+      "summary": "Elmarke connects a LINE OA extension tool to AI through the tool vendor's official MCP connector. The AI may only read numbers: it cannot send, create, change or delete messages or settings, and it does not fetch friend names or chat text. One shared operator account is invited to each client OA so many accounts are counted together. Trial started in November.",
+      "url": "https://prtimes.jp/main/html/rd/p/000000320.000028382.html",
+      "date": "2026-11-25",
+      "keywords": [
+        "MCP",
+        "Read-only AI",
+        "OA analytics"
+      ],
+      "links": []
+    },
+    {
+      "topic": "Developer projects",
+      "title": "Qiita: 'cc-monitor' sends Claude Code session alerts to LINE and rotates bots when the monthly quota runs low",
+      "summary": "A developer watches several Claude Code sessions through hooks and sends LINE Flex cards when a session waits for a reply, choice or permission. Webhooks go to a small Vercel relay that checks x-line-signature and queues events in Upstash Redis, so the PC is never exposed. Because the free OA plan in Japan allows 200 messages a month, the tool checks each bot's monthly limit and sent count and uses the first bot that still has quota.",
+      "url": "https://qiita.com/kataru_kotonoha/items/32c07a5b9b5e8dadef12",
+      "date": "2026-11-26",
+      "keywords": [
+        "Messaging API",
+        "Coding agents",
+        "Message quota"
+      ],
+      "links": []
+    },
+    {
+      "topic": "LINE MINI App (Japan)",
+      "title": "Mighty Craft launches 'Pochitto Kintai', a free time clock LINE MINI App for teams",
+      "summary": "Released Nov 26. Members join a group by invite code and clock in, out and breaks from LINE; admins set closing dates, maximum hours, self correction and location recording, lock months and keep an edit history. Basic use is free; CSV export needs a paid ticket.",
+      "url": "https://www.value-press.com/pressrelease/385440",
+      "date": "2026-11-27",
+      "keywords": [
+        "LINE MINI App",
+        "Time clock",
+        "SME"
+      ],
+      "links": []
+    },
+    {
+      "topic": "LINE Ads (Thailand)",
+      "title": "LINE Thailand AdSight Talk 2026: Chat Ad, OpenChat in the third tab, and LINE Ads AI Agent",
+      "summary": "LINE Thailand says OpenChat moved to the third tab in LINE with about 24 million monthly users, LINE TODAY will add Pop-up Ads and Expandable Footer formats, and the new Chat Ad objective opens a brand's OA chat from an ad even before the user adds it as a friend. Its LINE Ads AI Agent helps with setup, creatives and reports; Thai SMEs using AI Report saw 1.4 times the CTR of others, per LINE. Businesses can also connect the LINE Ads API to their own AI systems.",
+      "url": "https://mgronline.com/business/detail/9690000112919",
+      "date": "2026-11-26",
+      "keywords": [
+        "Chat Ad",
+        "LINE Ads AI Agent",
+        "OpenChat",
+        "Thailand"
+      ],
+      "links": []
+    },
+    {
+      "topic": "Platform status",
+      "title": "No new SDK, LIFF or Dify releases; n8n patch releases have no LINE changes; API Playground ends Nov 30",
+      "summary": "Latest SDK releases are unchanged: Python v3.27.0, Node.js v11.4.0 and PHP v12.9.0 (Oct 27); Java v10.2.0, Go v8.23.0 and Ruby v2.11.0 (Sep 29); line-bot-mcp-server v0.5.0; liff-cli v0.5.0; @line/liff 2.32.0 (Nov 9). n8n shipped 2.50.1 to 2.50.3 and 3.4.1 between Nov 25 and Nov 27 with no LINE mentions in the notes. Dify is still 1.20.0 (Nov 18). The API Playground in the Messaging API reference shuts down on Nov 30.",
+      "url": "https://github.com/n8n-io/n8n/releases/tag/n8n%403.4.1",
+      "date": "2026-11-26",
+      "keywords": [
+        "No SDK releases",
+        "n8n",
+        "API Playground"
+      ],
+      "links": [
+        {
+          "label": "n8n 2.50.3 release",
+          "url": "https://github.com/n8n-io/n8n/releases/tag/n8n%402.50.3",
+          "date": "2026-11-27"
+        },
+        {
+          "label": "line-bot-sdk-nodejs releases",
+          "url": "https://github.com/line/line-bot-sdk-nodejs/releases",
+          "date": "2026-10-27"
+        },
+        {
+          "label": "API Playground discontinuation",
+          "url": "https://developers.line.biz/en/news/2026/11/13/api-playground-discontinuation/",
+          "date": "2026-11-13"
+        }
+      ]
+    }
+  ]
+}
